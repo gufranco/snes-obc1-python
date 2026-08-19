@@ -1,0 +1,15 @@
+{
+  "comment": "The reference implementation this chip is held to. Pinned by commit so a build is reproducible.",
+  "reference": {
+    "name": "snes9x",
+    "repository": "https://github.com/snes9xgit/snes9x.git",
+    "commit": "2971061cf07fdc6fc7d18883edf4e648eb16a6d2",
+    "sparse": [
+      "."
+    ],
+    "path": ".",
+    "source": "obc1.cpp",
+    "from": "uint8 S9xGetOBC1",
+    "until": "uint8 * S9xGetBasePointerOBC1"
+  }
+}
