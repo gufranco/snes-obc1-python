@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: snes-obc1-python
+message: >-
+  If you use this work, or the states it was settled against, please cite it.
+type: software
+authors:
+  - given-names: Gustavo
+    family-names: Franco
+    alias: gufranco
+repository-code: https://github.com/gufranco/snes-obc1-python
+url: https://github.com/gufranco/snes-obc1-python
+abstract: >-
+  A model of the OBC1, the small address translator in Metal Combat that rewrites
+  sprite attribute writes into the layout the console expects. Every address in
+  its window is settled exhaustively against a reference implementation, in both
+  of the two banks the control register selects.
+keywords:
+  - emulation
+  - super-nintendo
+  - obc1
+  - sprites
+  - hardware-model
+  - conformance
+license: MIT
+version: 1.0.0

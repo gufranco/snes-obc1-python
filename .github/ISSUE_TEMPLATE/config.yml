@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Where do I get a cartridge?
+    url: https://github.com/gufranco/snes-obc1-python#faq
+    about: Not from here. Dump one you own, and never attach what it contains.
+  - name: What the sprites look like afterwards
+    url: https://github.com/gufranco/snes-graphics-python
+    about: The layout this part writes into is decoded there.
