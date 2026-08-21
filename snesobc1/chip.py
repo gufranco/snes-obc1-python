@@ -29,6 +29,8 @@ Restoring a saved cartridge is a different operation and is spelled differently:
 package's own, for tools that carry save states around, not the reset line.
 """
 
+from typing import override
+
 WINDOW_START = 0x6000
 
 WINDOW_END = 0x8000
@@ -63,7 +65,7 @@ class OutOfRange(Exception):
 class Obc1:
     """One OBC1, and the window it puts over its own memory."""
 
-    def __init__(self, ram=None):
+    def __init__(self, ram: bytearray | None = None) -> None:
         self.ram = bytearray(RAM_BYTES)
         self.base = BASE_HIGH
         self.address = 0
@@ -73,7 +75,7 @@ class Obc1:
         else:
             self.adopt(ram)
 
-    def reset(self):
+    def reset(self) -> "Obc1":
         """What the reset line does, which is less useful than it looks.
 
         Every byte is set before anything is read, so the base and pointer are
@@ -83,30 +85,30 @@ class Obc1:
         self.ram = bytearray([UNWRITTEN] * RAM_BYTES)
         return self._derive()
 
-    def adopt(self, ram):
+    def adopt(self, ram: bytearray) -> "Obc1":
         """Take a saved image and derive the state from it, which no reset does."""
         self.ram = bytearray(ram)
         return self._derive()
 
-    def _derive(self):
+    def _derive(self) -> "Obc1":
         self.base = BASE_LOW if self.ram[BASE_REGISTER - WINDOW_START] & 1 else BASE_HIGH
         pointer = self.ram[POINTER_REGISTER - WINDOW_START]
         self.address = pointer & ADDRESS_MASK
         self.shift = (pointer & PACKED_MASK) << 1
         return self
 
-    def _offset(self, address):
+    def _offset(self, address: int) -> int:
         if not WINDOW_START <= address < WINDOW_END:
             raise OutOfRange(f"{address:#06x} is not an address this chip answers")
         return address - WINDOW_START
 
-    def _quad(self, index):
+    def _quad(self, index: int) -> int:
         return self.base + (self.address << 2) + index
 
-    def _packed(self):
+    def _packed(self) -> int:
         return self.base + (self.address >> 2) + PACKED_OFFSET
 
-    def read(self, address):
+    def read(self, address: int) -> int:
         offset = self._offset(address)
         if FIRST_REGISTER <= address < PACKED_REGISTER:
             return self.ram[self._quad(address - FIRST_REGISTER)]
@@ -114,7 +116,7 @@ class Obc1:
             return self.ram[self._packed()]
         return self.ram[offset]
 
-    def write(self, address, value):
+    def write(self, address: int, value: int) -> None:
         offset = self._offset(address)
         value &= 0xFF
         if FIRST_REGISTER <= address < PACKED_REGISTER:
@@ -132,5 +134,6 @@ class Obc1:
             self.shift = (value & PACKED_MASK) << 1
         self.ram[offset] = value
 
-    def __repr__(self):
+    @override
+    def __repr__(self) -> str:
         return f"<OBC1 base {self.base:#06x} pointer {self.address:#04x} shift {self.shift}>"

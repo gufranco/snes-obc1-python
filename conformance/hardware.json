@@ -1,0 +1,80 @@
+{
+  "note": "What this model asserts about the OBC1 and where each assertion comes from. One cartridge carried this chip and no manufacturer document for it is known to exist, so most of what is here rests on a reference implementation. One thing does not, and it is the most interesting entry in the file.",
+  "authority": {
+    "order": [
+      "a manufacturer document for the OBC1, of which there is none",
+      "Nintendo's documented OAM structure, for anything the chip's layout mirrors",
+      "the reference implementation, for everything else"
+    ],
+    "why": "This chip exists to feed OAM. It holds sprite attributes and hands the console a moving window onto them, so the shape of what it holds is the shape of what OAM expects, and OAM is documented. Where the two line up, Nintendo's figure is evidence about this chip even though Nintendo never described this chip.",
+    "whatIsMissing": "Any document naming this part. Searched on 2026-08-21; nothing was found, and the chip appears in a single cartridge."
+  },
+  "facts": {
+    "packedOffset": {
+      "value": 512,
+      "hex": "0x200",
+      "verified": true,
+      "why": "The offset from a base address to the packed two-bit attributes. It is exactly the size of the OAM low table, which Nintendo documents as 128 sprites of four bytes each. The chip lays its memory out the way OAM is laid out, so this figure comes from a document rather than from a reimplementation.",
+      "source": "snes-graphics-python/conformance/hardware.json, and Nintendo's OAM structure behind it",
+      "derivation": "128 sprites x 4 bytes = 512"
+    },
+    "windowStart": {
+      "value": 24576,
+      "hex": "0x6000",
+      "verified": false,
+      "why": "Where the chip's window begins in the cartridge's address space.",
+      "evidence": "The reference implementation, corroborated by the driver in the one cartridge that carries this chip.",
+      "howToSettleIt": "A cartridge board schematic, or a continuity reading."
+    },
+    "windowEnd": {
+      "value": 32768,
+      "hex": "0x8000",
+      "verified": false,
+      "why": "Where it ends.",
+      "evidence": "The reference implementation.",
+      "howToSettleIt": "A cartridge board schematic, or a continuity reading."
+    },
+    "ramBytes": {
+      "value": 8192,
+      "hex": "0x2000",
+      "verified": false,
+      "why": "How much memory the chip holds, which is the width of its window.",
+      "evidence": "The reference implementation, and the window it answers across.",
+      "howToSettleIt": "A die photograph, or a package marking naming the memory."
+    },
+    "baseAddresses": {
+      "value": [6144, 7168],
+      "hex": ["0x1800", "0x1C00"],
+      "verified": false,
+      "why": "The two places the window can point at, selected by one bit of a register.",
+      "evidence": "The reference implementation. The two are 0x400 apart, which is twice the size of an OAM low table, so each base has room for a table and its packed attributes.",
+      "howToSettleIt": "A die photograph of the address decode."
+    },
+    "registers": {
+      "value": {
+        "first": "0x7FF0",
+        "packed": "0x7FF4",
+        "base": "0x7FF5",
+        "pointer": "0x7FF6"
+      },
+      "verified": false,
+      "why": "The seven addresses that do not behave like memory.",
+      "evidence": "The reference implementation, corroborated by the driver in the one cartridge that carries this chip.",
+      "howToSettleIt": "A die photograph, or a disassembly of that driver read independently."
+    },
+    "unwrittenByte": {
+      "value": 255,
+      "hex": "0xFF",
+      "verified": false,
+      "why": "What memory holds before anything is written, which the reset restores.",
+      "evidence": "The reference implementation.",
+      "howToSettleIt": "A measurement of a real cartridge immediately after power on."
+    }
+  },
+  "notStated": [
+    "Every register address. No manufacturer document names this part at all, so nothing here is a quote.",
+    "What the chip does with an address inside its window that is neither memory nor one of the seven registers, beyond what the reference does.",
+    "Anything about timing. How long the chip takes to answer, and whether the console can outrun it, is unmodelled and unmeasured.",
+    "Whether the two base addresses are the only two, or the only two that cartridge used."
+  ]
+}

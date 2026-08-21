@@ -22,6 +22,7 @@ Usage:
 
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -52,11 +53,11 @@ class Usage(Exception):
 
 
 class Options:
-    def __init__(self, driver=DEFAULT_DRIVER):
+    def __init__(self, driver: Path | str = DEFAULT_DRIVER) -> None:
         self.driver = driver
 
 
-def walk():
+def walk() -> list[tuple[str, int, int]]:
     """Every base and pointer the chip has, with each window address exercised."""
     steps = [("reset", 0, 0)]
     for base in BASE_VALUES:
@@ -71,7 +72,7 @@ def walk():
     return steps
 
 
-def resetting():
+def resetting() -> list[tuple[str, int, int]]:
     """The reset, which ignores whatever the cartridge held."""
     steps = []
     for base in BASE_VALUES:
@@ -84,7 +85,7 @@ def resetting():
     return steps
 
 
-def render(steps):
+def render(steps: Sequence[tuple[str, int, int]]) -> str:
     """The steps as the driver reads them, one to a line."""
     lines = []
     for verb, first, second in steps:
@@ -97,7 +98,7 @@ def render(steps):
     return "\n".join(lines) + "\n"
 
 
-def replay(steps):
+def replay(steps: Sequence[tuple[str, int, int]]) -> list[str]:
     """The same steps through the model, producing the same shape of transcript."""
     found = chip.Obc1()
     transcript = []
@@ -117,7 +118,7 @@ def replay(steps):
     return transcript
 
 
-def ask(steps, driver):
+def ask(steps: Sequence[tuple[str, int, int]], driver: Path | str) -> list[str]:
     """The same steps through the reference, whose answers decide."""
     done = subprocess.run(
         [driver],
@@ -132,7 +133,9 @@ def ask(steps, driver):
     return done.stdout.splitlines()
 
 
-def differences(expected, actual):
+def differences(
+    expected: Sequence[str], actual: Sequence[str]
+) -> list[tuple[int, str | None, str | None]]:
     """Where the two transcripts stop agreeing, by line."""
     found = []
     for index in range(max(len(expected), len(actual))):
@@ -143,7 +146,7 @@ def differences(expected, actual):
     return found
 
 
-def options(argv):
+def options(argv: Sequence[str]) -> "Options":
     chosen = Options()
     rest = list(argv)
     while rest:
@@ -156,7 +159,7 @@ def options(argv):
     return chosen
 
 
-def run(argv):
+def run(argv: Sequence[str]) -> int:
     chosen = options(argv)
     if not Path(chosen.driver).exists():
         print(f"no reference driver at {chosen.driver}; build it first")
@@ -180,7 +183,7 @@ def run(argv):
     return 1 if failed else 0
 
 
-def main(argv):
+def main(argv: Sequence[str]) -> int:
     try:
         return run(argv)
     except Usage as error:

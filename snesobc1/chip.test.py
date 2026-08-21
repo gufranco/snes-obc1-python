@@ -1,68 +1,69 @@
 import sys
 import unittest
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from snesobc1 import chip
 
 
-def fresh(**options):
+def fresh(**options: Any) -> Any:
     return chip.Obc1(**options)
 
 
 class MemoryTest(unittest.TestCase):
-    def test_the_chip_carries_eight_kilobytes(self):
+    def test_the_chip_carries_eight_kilobytes(self) -> None:
         self.assertEqual(len(fresh().ram), chip.RAM_BYTES)
 
-    def test_a_reset_leaves_every_byte_set_rather_than_cleared(self):
+    def test_a_reset_leaves_every_byte_set_rather_than_cleared(self) -> None:
         self.assertEqual(set(fresh().ram), {0xFF})
 
-    def test_an_ordinary_address_reads_straight_out_of_that_memory(self):
+    def test_an_ordinary_address_reads_straight_out_of_that_memory(self) -> None:
         found = fresh()
         found.ram[0x0000] = 0x42
 
         self.assertEqual(found.read(0x6000), 0x42)
 
-    def test_and_writes_straight_into_it(self):
+    def test_and_writes_straight_into_it(self) -> None:
         found = fresh()
 
         found.write(0x6000, 0x42)
 
         self.assertEqual(found.ram[0x0000], 0x42)
 
-    def test_an_address_outside_the_window_is_not_this_chip(self):
+    def test_an_address_outside_the_window_is_not_this_chip(self) -> None:
         with self.assertRaises(chip.OutOfRange):
             fresh().read(0x5FFF)
 
-    def test_neither_is_one_past_the_end(self):
+    def test_neither_is_one_past_the_end(self) -> None:
         with self.assertRaises(chip.OutOfRange):
             fresh().read(0x8000)
 
 
 class BaseTest(unittest.TestCase):
-    def test_the_base_follows_the_low_bit_of_its_register(self):
+    def test_the_base_follows_the_low_bit_of_its_register(self) -> None:
         found = fresh()
 
         found.write(0x7FF5, 0x01)
 
         self.assertEqual(found.base, chip.BASE_LOW)
 
-    def test_a_clear_bit_selects_the_other_base(self):
+    def test_a_clear_bit_selects_the_other_base(self) -> None:
         found = fresh()
 
         found.write(0x7FF5, 0x00)
 
         self.assertEqual(found.base, chip.BASE_HIGH)
 
-    def test_only_the_low_bit_of_that_register_matters(self):
+    def test_only_the_low_bit_of_that_register_matters(self) -> None:
         found = fresh()
 
         found.write(0x7FF5, 0xFE)
 
         self.assertEqual(found.base, chip.BASE_HIGH)
 
-    def test_a_reset_ignores_what_the_memory_held_because_it_wipes_it_first(self):
+    def test_a_reset_ignores_what_the_memory_held_because_it_wipes_it_first(self) -> None:
         found = fresh()
         found.ram[0x1FF5] = 0x00
 
@@ -70,7 +71,7 @@ class BaseTest(unittest.TestCase):
 
         self.assertEqual(found.base, chip.BASE_LOW)
 
-    def test_adopting_a_saved_image_does_read_the_base_out_of_it(self):
+    def test_adopting_a_saved_image_does_read_the_base_out_of_it(self) -> None:
         saved = bytearray([0xFF] * chip.RAM_BYTES)
         saved[0x1FF5] = 0x00
 
@@ -78,28 +79,28 @@ class BaseTest(unittest.TestCase):
 
 
 class PointerTest(unittest.TestCase):
-    def test_the_pointer_register_keeps_seven_bits(self):
+    def test_the_pointer_register_keeps_seven_bits(self) -> None:
         found = fresh()
 
         found.write(0x7FF6, 0xFF)
 
         self.assertEqual(found.address, 0x7F)
 
-    def test_and_takes_its_shift_from_the_low_two(self):
+    def test_and_takes_its_shift_from_the_low_two(self) -> None:
         found = fresh()
 
         found.write(0x7FF6, 0x03)
 
         self.assertEqual(found.shift, 6)
 
-    def test_a_pointer_of_zero_shifts_by_nothing(self):
+    def test_a_pointer_of_zero_shifts_by_nothing(self) -> None:
         found = fresh()
 
         found.write(0x7FF6, 0x00)
 
         self.assertEqual(found.shift, 0)
 
-    def test_a_reset_always_comes_up_the_same_way(self):
+    def test_a_reset_always_comes_up_the_same_way(self) -> None:
         found = fresh()
         found.ram[0x1FF6] = 0x05
 
@@ -107,7 +108,7 @@ class PointerTest(unittest.TestCase):
 
         self.assertEqual((found.address, found.shift), (0x7F, 6))
 
-    def test_adopting_a_saved_image_does_read_the_pointer_out_of_it(self):
+    def test_adopting_a_saved_image_does_read_the_pointer_out_of_it(self) -> None:
         saved = bytearray([0xFF] * chip.RAM_BYTES)
         saved[0x1FF6] = 0x05
 
@@ -117,7 +118,7 @@ class PointerTest(unittest.TestCase):
 
 
 class RemapTest(unittest.TestCase):
-    def test_the_first_four_registers_reach_four_consecutive_bytes(self):
+    def test_the_first_four_registers_reach_four_consecutive_bytes(self) -> None:
         found = fresh()
         found.write(0x7FF5, 0x00)
         found.write(0x7FF6, 0x02)
@@ -128,7 +129,7 @@ class RemapTest(unittest.TestCase):
         at = chip.BASE_HIGH + (0x02 << 2)
         self.assertEqual(list(found.ram[at : at + 4]), [0x10, 0x11, 0x12, 0x13])
 
-    def test_and_read_the_same_four_back(self):
+    def test_and_read_the_same_four_back(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x02)
         at = found.base + (0x02 << 2)
@@ -138,7 +139,7 @@ class RemapTest(unittest.TestCase):
             [found.read(0x7FF0 + offset) for offset in range(4)], [0x20, 0x21, 0x22, 0x23]
         )
 
-    def test_moving_the_pointer_moves_the_four_bytes_they_reach(self):
+    def test_moving_the_pointer_moves_the_four_bytes_they_reach(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x00)
         found.write(0x7FF0, 0xAA)
@@ -150,14 +151,14 @@ class RemapTest(unittest.TestCase):
 
 
 class PackedTest(unittest.TestCase):
-    def test_the_fifth_register_reaches_a_byte_a_quarter_as_far_along(self):
+    def test_the_fifth_register_reaches_a_byte_a_quarter_as_far_along(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x08)
         found.ram[found.base + (0x08 >> 2) + 0x200] = 0x5A
 
         self.assertEqual(found.read(0x7FF4), 0x5A)
 
-    def test_a_write_there_changes_only_its_own_two_bits(self):
+    def test_a_write_there_changes_only_its_own_two_bits(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x00)
         at = found.base + 0x200
@@ -167,7 +168,7 @@ class PackedTest(unittest.TestCase):
 
         self.assertEqual(found.ram[at], 0xFC)
 
-    def test_the_shift_decides_which_two_bits_it_changes(self):
+    def test_the_shift_decides_which_two_bits_it_changes(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x03)
         at = found.base + 0x200
@@ -177,7 +178,7 @@ class PackedTest(unittest.TestCase):
 
         self.assertEqual(found.ram[at], 0x3F)
 
-    def test_only_the_low_two_bits_of_the_value_are_kept(self):
+    def test_only_the_low_two_bits_of_the_value_are_kept(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x00)
         at = found.base + 0x200
@@ -187,7 +188,7 @@ class PackedTest(unittest.TestCase):
 
         self.assertEqual(found.ram[at], 0x03)
 
-    def test_four_pointers_sharing_a_byte_each_keep_their_own_corner(self):
+    def test_four_pointers_sharing_a_byte_each_keep_their_own_corner(self) -> None:
         found = fresh()
         at = None
         for pointer in range(4):
@@ -202,14 +203,14 @@ class PackedTest(unittest.TestCase):
 
 
 class ShadowTest(unittest.TestCase):
-    def test_a_write_to_a_register_is_also_kept_where_it_landed(self):
+    def test_a_write_to_a_register_is_also_kept_where_it_landed(self) -> None:
         found = fresh()
 
         found.write(0x7FF5, 0x01)
 
         self.assertEqual(found.ram[0x1FF5], 0x01)
 
-    def test_which_is_how_a_saved_image_recovers_the_state(self):
+    def test_which_is_how_a_saved_image_recovers_the_state(self) -> None:
         found = fresh()
         found.write(0x7FF6, 0x09)
 
@@ -217,7 +218,7 @@ class ShadowTest(unittest.TestCase):
 
 
 class ReadingTest(unittest.TestCase):
-    def test_a_chip_prints_as_its_base_and_its_pointer(self):
+    def test_a_chip_prints_as_its_base_and_its_pointer(self) -> None:
         self.assertIn("pointer", repr(fresh()))
 
 

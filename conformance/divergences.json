@@ -1,0 +1,55 @@
+{
+  "comment": "Where each fact about this chip stands, given that no document names the part.",
+  "sources": {
+    "document": "None for the OBC1. Nintendo's OAM structure is documented and is what this chip feeds.",
+    "reference": "snes9x, pinned by commit in conformance/pinned.json.",
+    "cartridge": "The one cartridge that carries this chip, whose driver is the only program that ever drove it."
+  },
+  "divergences": [
+    {
+      "id": "no-document-names-this-part",
+      "parts": ["obc1"],
+      "severity": "high",
+      "status": "open",
+      "documentSays": "Nothing. No manufacturer document for the OBC1 is known to exist.",
+      "referenceDoes": "Gives every register address, both base addresses and the memory size.",
+      "packageFollows": "reference",
+      "reasoning": "One cartridge carried this chip, so there is no corpus of independent drivers to cross-check against and no second implementation that was not written by reading the same one. Everything except the packed offset rests on that.",
+      "wouldSettleIt": "A die photograph, a board schematic, or a Nintendo application note naming the part."
+    },
+    {
+      "id": "the-packed-offset-comes-from-a-document",
+      "parts": ["obc1"],
+      "severity": "low",
+      "status": "closed",
+      "documentSays": "Nintendo documents OAM as 128 sprites of four bytes each, followed by two bits per sprite.",
+      "referenceDoes": "Uses 0x200 as the offset from a base to the packed attributes.",
+      "packageFollows": "document",
+      "reasoning": "128 times 4 is 512, which is 0x200. This chip lays its memory out the way OAM is laid out, because feeding OAM is the whole of what it does, so Nintendo's figure is evidence about this chip even though Nintendo never described this chip. It is the one constant here that does not rest on a reimplementation.",
+      "wouldReopenIt": "Finding that the offset is not the OAM low table size, which would mean the layouts do not mirror each other after all.",
+      "wouldSettleIt": "Already settled."
+    },
+    {
+      "id": "one-cartridge-is-not-a-corpus",
+      "parts": ["obc1"],
+      "severity": "medium",
+      "status": "open",
+      "documentSays": "Nothing.",
+      "referenceDoes": "Behaves as the one driver that exists needs it to.",
+      "packageFollows": "reference",
+      "reasoning": "Sibling packages cross-check a behaviour across dozens of cartridges, and one driver could be wrong where thirty six could not be wrong the same way. Here there is one driver, so anything it never exercises is unconstrained: the chip could do something else entirely with a base address that cartridge never selects and nothing would notice.",
+      "wouldSettleIt": "A second cartridge carrying this chip, which does not exist, or a die photograph."
+    },
+    {
+      "id": "nothing-here-is-a-timing-claim",
+      "parts": ["obc1"],
+      "severity": "low",
+      "status": "notModelled",
+      "documentSays": "Nothing.",
+      "referenceDoes": "Answers immediately, as this model does.",
+      "packageFollows": "reference",
+      "reasoning": "How long the chip takes to answer is unmodelled and unmeasured.",
+      "wouldSettleIt": "A measurement on a real cartridge."
+    }
+  ]
+}

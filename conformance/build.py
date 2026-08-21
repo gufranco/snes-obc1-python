@@ -16,7 +16,9 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 
@@ -40,20 +42,27 @@ class Usage(Exception):
 
 
 class Options:
-    def __init__(self, sources=DEFAULT_SOURCES, output=DEFAULT_OUTPUT, pinned=None, driver=None):
+    def __init__(
+        self,
+        sources: Path | str = DEFAULT_SOURCES,
+        output: Path | str = DEFAULT_OUTPUT,
+        pinned: Path | str | None = None,
+        driver: Path | str | None = None,
+    ) -> None:
         self.sources = sources
         self.output = output
         self.pinned = pinned
         self.driver = driver
 
 
-def reference(path=None):
+def reference(path: Path | str | None = None) -> dict[str, Any]:
     """The reference this driver is built against, as written down."""
     with Path(path or DEFINITION).open() as handle:
-        return json.load(handle)["reference"]
+        pinned: dict[str, Any] = json.load(handle)["reference"]
+    return pinned
 
 
-def checkout_command(pinned, directory):
+def checkout_command(pinned: Mapping[str, Any], directory: Path | str) -> list[list[str]]:
     """The git steps that bring the sources down, without history or blobs."""
     where = str(directory)
     return [
@@ -76,7 +85,7 @@ def checkout_command(pinned, directory):
     ]
 
 
-def extract(sources, pinned, into):
+def extract(sources: Path | str, pinned: Mapping[str, Any], into: Path | str) -> Path:
     """Lift the reference's own function bodies out of the file they live in.
 
     The chip's code sits inside a file that also carries a memory mapper this
@@ -96,7 +105,9 @@ def extract(sources, pinned, into):
     return Path(into)
 
 
-def compile_command(sources, output, driver=None):
+def compile_command(
+    sources: Path | str, output: Path | str, driver: Path | str | None = None
+) -> list[str]:
     """The one compile, of the one file this repository owns."""
     return [
         COMPILER,
@@ -110,11 +121,11 @@ def compile_command(sources, output, driver=None):
     ]
 
 
-def _git_environment():
+def _git_environment() -> dict[str, str]:
     return {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
 
 
-def fetch(pinned, directory):
+def fetch(pinned: Mapping[str, Any], directory: Path | str) -> Path:
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     for step in checkout_command(pinned, directory):
@@ -128,10 +139,10 @@ def fetch(pinned, directory):
         )
         if done.returncode:
             raise Usage(f"fetching the reference failed at {' '.join(step)}\n{done.stderr}")
-    return directory / pinned["path"]
+    return Path(directory) / str(pinned["path"])
 
 
-def options(argv):
+def options(argv: Sequence[str]) -> "Options":
     chosen = Options()
     rest = list(argv)
     while rest:
@@ -152,7 +163,7 @@ def options(argv):
     return chosen
 
 
-def run(argv):
+def run(argv: Sequence[str]) -> int:
     chosen = options(argv)
     sources = Path(chosen.sources)
     pinned = reference(chosen.pinned)
@@ -175,7 +186,7 @@ def run(argv):
     return 0
 
 
-def main(argv):
+def main(argv: Sequence[str]) -> int:
     try:
         return run(argv)
     except Usage as error:
