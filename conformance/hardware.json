@@ -9,6 +9,20 @@
     "why": "This chip exists to feed OAM. It holds sprite attributes and hands the console a moving window onto them, so the shape of what it holds is the shape of what OAM expects, and OAM is documented. Where the two line up, Nintendo's figure is evidence about this chip even though Nintendo never described this chip.",
     "whatIsMissing": "Any document naming this part. Searched on 2026-08-21; nothing was found, and the chip appears in a single cartridge."
   },
+  "documents": {
+    "developmentManual": {
+      "publisher": "Nintendo of America Inc.",
+      "title": "SNES Development Manual, Book 1",
+      "readOn": "2026-08-21",
+      "retrievedFrom": "archive.org/details/SNESDevManual, book1_text.pdf",
+      "sha256": "f1405241000046abba7849376d2ec53cf85f1ad2e9950d69a7c2cf1f3ff6b791",
+      "bytes": 21022582,
+      "file": "book1_text.pdf",
+      "through": "snes-graphics-python",
+      "note": "Not read here. The packed offset this record carries follows from the object attribute table's structure, which snes-graphics-python read out of this manual and pinned. The pin is repeated rather than referred to so a reader holding a different scan can tell before they start, and the sibling is named so nobody mistakes a digest somebody else read for a reading done here."
+    }
+  },
+  "documentsNote": "One entry, and it is a source reached through a sibling rather than one read here. No manufacturer document for this chip is known to exist: everything else in this record comes from the reference implementation and from the one cartridge that carries the part, which are rungs below the top of the ladder and are labelled as such.",
   "facts": {
     "packedOffset": {
       "value": 512,
@@ -16,7 +30,8 @@
       "verified": true,
       "why": "The offset from a base address to the packed two-bit attributes. It is exactly the size of the OAM low table, which Nintendo documents as 128 sprites of four bytes each. The chip lays its memory out the way OAM is laid out, so this figure comes from a document rather than from a reimplementation.",
       "source": "snes-graphics-python/conformance/hardware.json, and Nintendo's OAM structure behind it",
-      "derivation": "128 sprites x 4 bytes = 512"
+      "derivation": "128 sprites x 4 bytes = 512",
+      "document": "developmentManual"
     },
     "windowStart": {
       "value": 24576,

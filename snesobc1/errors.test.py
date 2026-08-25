@@ -53,7 +53,7 @@ class OneHomeTest(unittest.TestCase):
         ]
 
     def test_the_module_defines_the_refusal_this_package_makes(self) -> None:
-        self.assertEqual(sorted(self.named()), ["OutOfRange"])
+        self.assertEqual(sorted(self.named()), ["OutOfRange", "UnknownModelError"])
 
     def test_it_derives_from_exception(self) -> None:
         stray = [name for name in self.named() if not issubclass(getattr(errors, name), Exception)]
@@ -73,7 +73,7 @@ class OneHomeTest(unittest.TestCase):
         from snesobc1 import chip
 
         with self.assertRaises(errors.OutOfRange):
-            chip.Obc1().read(0x0000)
+            chip.Chip().read(0x0000)
 
 
 class NoCycleTest(unittest.TestCase):

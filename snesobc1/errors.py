@@ -21,3 +21,11 @@ class OutOfRange(Exception):
     something else entirely, so a value returned here would be this package
     inventing the rest of the board.
     """
+
+
+class UnknownModelError(Exception):
+    """No model goes by that name.
+
+    The message names the models that would have worked, because a refusal that
+    does not costs the caller a search through the source. There is one.
+    """

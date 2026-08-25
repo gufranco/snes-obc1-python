@@ -60,10 +60,12 @@ PACKED_MASK = 0x03
 UNWRITTEN = 0xFF
 
 
-class Obc1:
+class Chip:
     """One OBC1, and the window it puts over its own memory."""
 
-    __slots__ = ("address", "base", "ram", "shift")
+    __slots__ = ("address", "base", "model", "ram", "shift")
+
+    model: str
 
     def __init__(self, ram: bytearray | None = None) -> None:
         self.ram = bytearray(RAM_BYTES)
@@ -75,7 +77,7 @@ class Obc1:
         else:
             self.adopt(ram)
 
-    def reset(self) -> "Obc1":
+    def reset(self) -> "Chip":
         """What the reset line does, which is less useful than it looks.
 
         Every byte is set before anything is read, so the base and pointer are
@@ -85,12 +87,12 @@ class Obc1:
         self.ram = bytearray([UNWRITTEN] * RAM_BYTES)
         return self._derive()
 
-    def adopt(self, ram: bytearray) -> "Obc1":
+    def adopt(self, ram: bytearray) -> "Chip":
         """Take a saved image and derive the state from it, which no reset does."""
         self.ram = bytearray(ram)
         return self._derive()
 
-    def _derive(self) -> "Obc1":
+    def _derive(self) -> "Chip":
         self.base = BASE_LOW if self.ram[BASE_REGISTER - WINDOW_START] & 1 else BASE_HIGH
         pointer = self.ram[POINTER_REGISTER - WINDOW_START]
         self.address = pointer & ADDRESS_MASK

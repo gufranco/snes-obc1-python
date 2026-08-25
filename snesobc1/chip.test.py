@@ -10,7 +10,7 @@ from snesobc1.errors import OutOfRange
 
 
 def fresh(**options: Any) -> Any:
-    return chip.Obc1(**options)
+    return chip.Chip(**options)
 
 
 class MemoryTest(unittest.TestCase):
@@ -76,7 +76,7 @@ class BaseTest(unittest.TestCase):
         saved = bytearray([0xFF] * chip.RAM_BYTES)
         saved[0x1FF5] = 0x00
 
-        self.assertEqual(chip.Obc1(ram=saved).base, chip.BASE_HIGH)
+        self.assertEqual(chip.Chip(ram=saved).base, chip.BASE_HIGH)
 
 
 class PointerTest(unittest.TestCase):
@@ -113,7 +113,7 @@ class PointerTest(unittest.TestCase):
         saved = bytearray([0xFF] * chip.RAM_BYTES)
         saved[0x1FF6] = 0x05
 
-        found = chip.Obc1(ram=saved)
+        found = chip.Chip(ram=saved)
 
         self.assertEqual((found.address, found.shift), (0x05, 2))
 
@@ -215,7 +215,7 @@ class ShadowTest(unittest.TestCase):
         found = fresh()
         found.write(0x7FF6, 0x09)
 
-        self.assertEqual(chip.Obc1(ram=found.ram).address, 0x09)
+        self.assertEqual(chip.Chip(ram=found.ram).address, 0x09)
 
 
 class ReadingTest(unittest.TestCase):

@@ -19,9 +19,12 @@ The chip answers accesses. There is no clock, no instruction to step through and
 no cycle count to hand back, so none of the family's clocked interface appears
 here.
 
-- `Obc1()` builds a chip and resets it. `Obc1(ram=image)` takes an image and
-  derives the window state from it without wiping, which is this package's own
-  and not something the chip offers.
+- `Chip("obc1")` builds a chip and resets it. `Chip("obc1", ram=image)` takes an
+  image and derives the window state from it without wiping, which is this
+  package's own and not something the chip offers.
+- One model, and the constructor still takes it. That is the family's shape for
+  a part, matching `Cpu(model, memory)` on the members that run a program, and it
+  means a name this package does not know is refused rather than ignored.
 - `chip.reset()` is the reset line: every byte to `FF`, then the base and the
   pointer read back out of the bytes it just wrote.
 - `chip.read(address)` and `chip.write(address, value)` go through the window

@@ -25,12 +25,12 @@
   <a href="https://github.com/gufranco/snes-obc1-python/issues">Issues</a>
 </p>
 
-**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **302** tests · **100%** statement and branch coverage · no dependencies
+**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **335** tests · **100%** statement and branch coverage · no dependencies
 
 ```python
-from snesobc1 import Obc1
+from snesobc1 import Chip
 
-chip = Obc1()
+chip = Chip("obc1")
 chip.write(0x7FF6, 0x02)
 for offset, value in enumerate((0x10, 0x20, 0x30, 0x40)):
     chip.write(0x7FF0 + offset, value)
@@ -63,11 +63,19 @@ against, and only if you want to run that walk yourself.
 
 Everything a caller touches. Nothing else is public.
 
+One model, and the constructor still takes it. A caller moving between members of
+this family writes the same call everywhere, and a name this package does not
+know is refused rather than ignored.
+
+| Model | Also answers to | Is |
+|:--|:--|:--|
+| `obc1` | `obc-1`, `obc` | The sprite remapper one cartridge carried |
+
 | Call | Does | Returns |
 |:--|:--|:--|
-| `Obc1(ram=None)` | Builds a chip. Given an image, derives the window state from it rather than wiping it | an `Obc1` |
-| `chip.reset()` | Drives the reset line: every byte to `FF`, then the state read back out of what it just wrote | the `Obc1` |
-| `chip.adopt(ram)` | Takes an image into an existing chip and derives the state from it | the `Obc1` |
+| `Chip(model, ram=None)` | Builds a chip. Given an image, derives the window state from it rather than wiping it | a `Chip` |
+| `chip.reset()` | Drives the reset line: every byte to `FF`, then the state read back out of what it just wrote | the `Chip` |
+| `chip.adopt(ram)` | Takes an image into an existing chip and derives the state from it | the `Chip` |
 | `chip.read(address)` | Reads, through the window where the address is one of the seven | `int` |
 | `chip.write(address, value)` | Writes, through the window where the address is one of the seven | nothing |
 
@@ -107,9 +115,9 @@ which corner of the shared byte `$7FF4` reaches. They are not separate fields, s
 moving the pointer by one moves both.
 
 ```python
-from snesobc1 import Obc1
+from snesobc1 import Chip
 
-chip = Obc1()
+chip = Chip("obc1")
 chip.write(0x7FF6, 0x05)
 
 print(chip.address)
@@ -127,9 +135,9 @@ model that writes the whole byte destroys three neighbours and looks correct
 until four sprites are on screen at once.
 
 ```python
-from snesobc1 import Obc1
+from snesobc1 import Chip
 
-chip = Obc1()
+chip = Chip("obc1")
 
 chip.write(0x7FF6, 0x01)
 chip.write(0x7FF4, 0x00)
@@ -170,13 +178,13 @@ it.
 Restoring a saved cartridge is a different operation and is spelled differently:
 
 ```python
-from snesobc1 import Obc1
+from snesobc1 import Chip
 
 saved = bytearray(0x2000)
 saved[0x1FF6] = 0x09
 
-print(Obc1(ram=saved).address)
-print(Obc1(ram=saved).reset().address)
+print(Chip("obc1", ram=saved).address)
+print(Chip("obc1", ram=saved).reset().address)
 ```
 
 ```
@@ -184,7 +192,7 @@ print(Obc1(ram=saved).reset().address)
 127
 ```
 
-`Obc1(ram=...)` is this package's own, for tools that carry save states around.
+`Chip(model, ram=...)` is this package's own, for tools that carry save states around.
 The chip has no such button, and the reset forgets whatever the image held.
 
 ## Non-obvious decisions
@@ -242,7 +250,7 @@ work.
 When a run disagrees with something on this machine:
 
 ```bash
-python3 -m snesobc1.doctor
+python3 snesobc1/doctor.py
 ```
 
 It looks at this machine and prints what is actually there, and every line is

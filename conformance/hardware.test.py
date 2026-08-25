@@ -130,7 +130,7 @@ class ConstantTest(unittest.TestCase):
         self.assertEqual(unwritten["value"], chip.UNWRITTEN)
 
     def test_and_a_fresh_chip_is_full_of_it(self) -> None:
-        fresh = chip.Obc1()
+        fresh = chip.Chip()
 
         self.assertEqual(fresh.read(chip.WINDOW_START), chip.UNWRITTEN)
 

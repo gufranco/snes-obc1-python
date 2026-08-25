@@ -23,16 +23,37 @@ including a write actually pushed through the window and read back out of memory
 import hashlib
 import json
 import platform
+import re
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, override
 
-from . import chip
-from .errors import OutOfRange
-from .version import VERSION
+
+def _version(where: Path | None = None) -> str:
+    """The package version, read out of the file beside this one.
+
+    Read rather than imported. Importing it would go through the package, and a
+    package that will not import is one of the things this exists to report.
+    """
+    found = re.search(
+        r"""VERSION\s*[:=][^"']*["']([^"']+)["']""",
+        (where or Path(__file__).resolve().parent / "version.py").read_text(),
+    )
+    return found.group(1) if found else "unknown"
+
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+VERSION = _version()
+
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from snesobc1 import chip  # noqa: E402
+from snesobc1.errors import OutOfRange  # noqa: E402
 
 PIN = ROOT / "conformance" / "pinned.json"
 
@@ -222,7 +243,7 @@ def _driver(where: Path | str) -> "Finding":
 
 
 def _default_build() -> Any:
-    return chip.Obc1()
+    return chip.Chip()
 
 
 def examine(

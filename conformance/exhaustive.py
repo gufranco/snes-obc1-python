@@ -100,7 +100,7 @@ def render(steps: Sequence[tuple[str, int, int]]) -> str:
 
 def replay(steps: Sequence[tuple[str, int, int]]) -> list[str]:
     """The same steps through the model, producing the same shape of transcript."""
-    found = chip.Obc1()
+    found = chip.Chip()
     transcript = []
     for verb, first, second in steps:
         if verb == "reset":
