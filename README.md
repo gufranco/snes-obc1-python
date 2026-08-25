@@ -25,7 +25,7 @@
   <a href="https://github.com/gufranco/snes-obc1-python/issues">Issues</a>
 </p>
 
-**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **373** tests · **100%** statement and branch coverage · no dependencies
+**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **375** tests · **100%** statement and branch coverage · no dependencies
 
 ```python
 from snesobc1 import Chip

@@ -7,7 +7,11 @@
       "the reference implementation, for everything else"
     ],
     "why": "This chip exists to feed OAM. It holds sprite attributes and hands the console a moving window onto them, so the shape of what it holds is the shape of what OAM expects, and OAM is documented. Where the two line up, Nintendo's figure is evidence about this chip even though Nintendo never described this chip.",
-    "whatIsMissing": "Any document naming this part. Searched on 2026-08-21; nothing was found, and the chip appears in a single cartridge."
+    "whatIsMissing": "Any document naming this part. Searched on 2026-08-21; nothing was found, and the chip appears in a single cartridge.",
+    "comparedAgainst": {
+      "runner": "conformance/exhaustive.py",
+      "what": "An independent implementation, built from a pinned commit, asked every address the chip answers."
+    }
   },
   "documents": {
     "developmentManual": {
