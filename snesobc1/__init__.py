@@ -12,10 +12,12 @@ window onto somewhere else, and where that somewhere is comes from the other two
 Memory comes up set rather than cleared, which is what the reset does.
 """
 
-from . import chip
-from .chip import Obc1, OutOfRange
+from . import chip as chip
+from . import errors as errors
+from .chip import Obc1
+from .errors import OutOfRange
 from .version import VERSION
 
 __version__ = VERSION
 
-__all__ = ["Obc1", "OutOfRange", "__version__", "chip"]
+__all__ = ["Obc1", "OutOfRange", "__version__"]

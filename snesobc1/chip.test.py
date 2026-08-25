@@ -6,6 +6,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from snesobc1 import chip
+from snesobc1.errors import OutOfRange
 
 
 def fresh(**options: Any) -> Any:
@@ -33,11 +34,11 @@ class MemoryTest(unittest.TestCase):
         self.assertEqual(found.ram[0x0000], 0x42)
 
     def test_an_address_outside_the_window_is_not_this_chip(self) -> None:
-        with self.assertRaises(chip.OutOfRange):
+        with self.assertRaises(OutOfRange):
             fresh().read(0x5FFF)
 
     def test_neither_is_one_past_the_end(self) -> None:
-        with self.assertRaises(chip.OutOfRange):
+        with self.assertRaises(OutOfRange):
             fresh().read(0x8000)
 
 

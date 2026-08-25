@@ -8,47 +8,24 @@
 <br>
 
 [![CI](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
-[![Conformance](https://img.shields.io/badge/conformance-every%20state-brightgreen)](#how-this-is-settled)
-[![Coverage](https://img.shields.io/badge/coverage-100%25%20statement%20%2B%20branch-brightgreen)](#tests)
+[![Conformance](https://img.shields.io/badge/conformance-every%20state-brightgreen)](#is-it-right)
+[![Coverage](https://img.shields.io/badge/coverage-100%25%20statement%20%2B%20branch-brightgreen)](#working-on-it)
+[![Types](https://img.shields.io/badge/mypy-strict-blue)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 </div>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> &nbsp;|&nbsp;
-  <a href="#what-the-chip-does">What it does</a> &nbsp;|&nbsp;
-  <a href="#how-this-is-settled">How this is settled</a> &nbsp;|&nbsp;
+  <a href="#install">Install</a> &nbsp;|&nbsp;
+  <a href="#the-interface">The interface</a> &nbsp;|&nbsp;
+  <a href="#the-two-things-that-are-easy-to-get-wrong">The two traps</a> &nbsp;|&nbsp;
   <a href="#the-reset-does-not-do-what-it-looks-like">The reset</a> &nbsp;|&nbsp;
+  <a href="#is-it-right">Is it right</a> &nbsp;|&nbsp;
   <a href="https://github.com/gufranco/snes-obc1-python/issues">Issues</a>
 </p>
 
-**7** addresses · **256** states, all of them visited · **3,126** steps agreeing with the reference · **84** tests · **100%** statement and branch coverage
-
-```python
-from snesobc1 import Obc1
-
-chip = Obc1()
-chip.write(0x7FF6, 0x02)
-chip.write(0x7FF0, 0xAA)
-```
-
-## Quick start
-
-### Prerequisites
-
-| Tool | Version | Install |
-|:-----|:--------|:--------|
-| Python | 3.12 or newer | [python.org](https://www.python.org/downloads/) |
-| A C++ compiler | any recent | only for running the conformance comparison |
-
-### Install
-
-```bash
-pip install git+https://github.com/gufranco/snes-obc1-python.git
-```
-
-### Point the window somewhere and write through it
+**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **292** tests · **100%** statement and branch coverage · no dependencies
 
 ```python
 from snesobc1 import Obc1
@@ -71,6 +48,44 @@ The four bytes went to a place the program never named. That is the entire point
 of the chip: a program writes one sprite's attributes to the same four addresses
 every time and lets the pointer decide which sprite it was.
 
+## Install
+
+```bash
+pip install git+https://github.com/gufranco/snes-obc1-python.git
+```
+
+Python 3.12 or newer. Nothing else at runtime.
+
+A C++ compiler is needed only to build the reference the conformance walk compares
+against, and only if you want to run that walk yourself.
+
+## The interface
+
+Everything a caller touches. Nothing else is public.
+
+| Call | Does | Returns |
+|:--|:--|:--|
+| `Obc1(ram=None)` | Builds a chip. Given an image, derives the window state from it rather than wiping it | an `Obc1` |
+| `chip.reset()` | Drives the reset line: every byte to `FF`, then the state read back out of what it just wrote | the `Obc1` |
+| `chip.adopt(ram)` | Takes an image into an existing chip and derives the state from it | the `Obc1` |
+| `chip.read(address)` | Reads, through the window where the address is one of the seven | `int` |
+| `chip.write(address, value)` | Writes, through the window where the address is one of the seven | nothing |
+
+| Attribute | Is |
+|:--|:--|
+| `chip.ram` | The eight kilobytes, as a `bytearray` |
+| `chip.base` | Which of the two places the window currently sits over |
+| `chip.address` | Where the pointer points |
+| `chip.shift` | Which two bits of the shared byte `$7FF4` reaches |
+
+`OutOfRange` is raised for an address the chip does not answer, rather than a
+value being returned for it. On a real cartridge that address is decoded by
+something else entirely, so answering it here would be this package inventing the
+rest of the board.
+
+There is no model argument. One cartridge carried this chip and there is no
+second variant to choose between.
+
 ## What the chip does
 
 Eight kilobytes of memory with seven addresses at the top that do not read or
@@ -84,17 +99,60 @@ write where they say.
 | `$7FF6` | The pointer, and the two bits `$7FF4` reaches |
 | anything else | Itself |
 
-Two things are easy to get wrong.
+## The two things that are easy to get wrong
 
 **The pointer register does two jobs from one byte.** Its low seven bits choose
 which sprite the window points at. Its low two bits, the same two, also choose
 which corner of the shared byte `$7FF4` reaches. They are not separate fields, so
 moving the pointer by one moves both.
 
+```python
+from snesobc1 import Obc1
+
+chip = Obc1()
+chip.write(0x7FF6, 0x05)
+
+print(chip.address)
+print(chip.shift)
+```
+
+```
+5
+2
+```
+
 **`$7FF4` is a read-modify-write inside the chip.** Four sprites share one byte,
 two bits each, so a write there changes two bits and leaves the other six. A
 model that writes the whole byte destroys three neighbours and looks correct
 until four sprites are on screen at once.
+
+```python
+from snesobc1 import Obc1
+
+chip = Obc1()
+
+chip.write(0x7FF6, 0x01)
+chip.write(0x7FF4, 0x00)
+print(f"{chip.read(0x7FF4):#04x}")
+
+chip.write(0x7FF6, 0x02)
+chip.write(0x7FF4, 0x00)
+print(f"{chip.read(0x7FF4):#04x}")
+```
+
+```
+0xf3
+0xc3
+```
+
+The reset leaves every byte at `FF`. Clearing through pointer 1 takes out bits 2
+and 3 and leaves the other six standing; clearing through pointer 2 then takes
+out bits 4 and 5 and leaves the first change intact. A model that wrote the whole
+byte would show `0x00` twice and have destroyed three sprites to set one.
+
+The read hands back the whole byte rather than the two bits, because that is what
+the address answers. Extracting a corner is the caller's business, and the shift
+to do it with is on the chip.
 
 ## The reset does not do what it looks like
 
@@ -112,14 +170,36 @@ it.
 Restoring a saved cartridge is a different operation and is spelled differently:
 
 ```python
-chip = Obc1(ram=saved)  # derives the state from the image
-chip.reset()  # forgets it, as the reset line does
+from snesobc1 import Obc1
+
+saved = bytearray(0x2000)
+saved[0x1FF6] = 0x09
+
+print(Obc1(ram=saved).address)
+print(Obc1(ram=saved).reset().address)
+```
+
+```
+9
+127
 ```
 
 `Obc1(ram=...)` is this package's own, for tools that carry save states around.
-The chip has no such button.
+The chip has no such button, and the reset forgets whatever the image held.
 
-## How this is settled
+## Non-obvious decisions
+
+- Memory is a plain `bytearray` rather than the sparse, seeded kind the processor
+  packages in this family use. This chip's reset writes every byte before reading
+  any, so there is no unwritten byte for a program to observe.
+- The reference's two functions are lifted out by markers rather than the file
+  being compiled whole. The rest of that file is a memory mapper that would drag
+  in most of an emulator to reach two hundred lines.
+- It is a part rather than a clocked part. It answers accesses and has no
+  instruction to step through, so it carries none of the interface the family
+  standard describes for something driven by a budget of cycles.
+
+## Is it right
 
 The chip is small enough that there is no need to sample it. Its state is a base,
 one of two, and a pointer, one of a hundred and twenty eight. Every combination
@@ -131,8 +211,8 @@ is reachable in a few writes, so every combination is visited.
 | The reset | 50 | That the reset ignores whatever memory held, from ten different starting states |
 
 ```bash
-python conformance/build.py
-python conformance/exhaustive.py
+python3 -m conformance.build
+python3 -m conformance.exhaustive
 ```
 
 ```
@@ -150,53 +230,16 @@ something else.
 A check that cannot fail proves nothing, so the runner is also shown to fail: the
 tests point it at a driver that answers wrongly and confirm it says so.
 
-## Layout
+[`conformance/hardware.json`](conformance/hardware.json) holds what this model
+asserts and where each assertion comes from.
+[`conformance/divergences.json`](conformance/divergences.json) holds where a
+source is weaker than it looks, and [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
+carries every place fidelity here is a claim rather than a measurement. The
+largest of those is that no manufacturer document names this part at all, so the
+top rung of the authority ladder is empty and the rung below it is doing the
+work.
 
-| File | Holds |
-|:-----|:------|
-| [`snesobc1/chip.py`](snesobc1/chip.py) | The memory, the window over it, and the seven addresses that move it |
-| [`conformance/exhaustive.py`](conformance/exhaustive.py) | Every state the chip has, against the reference |
-| [`conformance/build.py`](conformance/build.py) | Fetches the pinned reference and lifts the chip out of it |
-| [`conformance/ref/driver.cpp`](conformance/ref/driver.cpp) | The driver that wraps those functions |
-
-## For contributors and reviewers
-
-### Running the tests
-
-Each module has its test file beside it, named after it.
-
-```bash
-python -m coverage erase
-for file in $(find snesobc1 conformance -name '*.test.py' | sort); do
-  python -m coverage run -a "$file"
-done
-python -m coverage report
-```
-
-Coverage is a gate, not a report: the build fails below 100% of statements and
-branches.
-
-### Project conventions
-
-| Convention | Source |
-|:-----------|:-------|
-| Commit format | [Conventional Commits](https://www.conventionalcommits.org/) |
-| Format and lint | [ruff](https://docs.astral.sh/ruff/), configured in [pyproject.toml](pyproject.toml) |
-| Releases | [semantic-release](https://semantic-release.gitbook.io/), from the commit history |
-| Test naming | A sentence stating the behaviour, not the function name |
-
-### Non-obvious decisions
-
-- Memory is a plain `bytearray` rather than the sparse, seeded kind the processor
-  packages in this family use. This chip's reset writes every byte before reading
-  any, so there is no unwritten byte for a program to observe.
-- The reference's two functions are lifted out by markers rather than the file
-  being compiled whole. The rest of that file is a memory mapper that would drag
-  in most of an emulator to reach two hundred lines.
-- There is no model argument. One cartridge carried this chip and there is no
-  second variant to choose between.
-
-## When something is wrong
+When a run disagrees with something on this machine:
 
 ```bash
 python3 -m snesobc1.doctor
@@ -208,7 +251,48 @@ check that fails says what it saw. A check that itself throws is reported as wha
 it threw rather than taking the report down with it. Paste all of it into an
 issue.
 
-## Contributing
+## Working on it
+
+```bash
+python3 -m coverage erase
+for file in $(find snesobc1 conformance -name '*.test.py' | sort); do
+  python3 -m coverage run -a "$file"
+done
+python3 -m coverage report
+```
+
+Coverage is a gate, not a report: the build fails below 100% of statements and
+branches. Types are `mypy` at strict. Everything under `conformance/` runs as a
+module rather than as a script, because run as a script its own directory goes on
+the import path and a file there shadows any standard library module of the same
+name.
+
+Each module has its test file beside it, named after it.
+
+| File | Holds |
+|:-----|:------|
+| [`snesobc1/chip.py`](snesobc1/chip.py) | The memory, the window over it, and the seven addresses that move it |
+| [`snesobc1/errors.py`](snesobc1/errors.py) | The one refusal this package makes, importing nothing from the package |
+| [`snesobc1/doctor.py`](snesobc1/doctor.py) | What is actually on this machine, for an issue report |
+| [`conformance/exhaustive.py`](conformance/exhaustive.py) | Every state the chip has, against the reference |
+| [`conformance/build.py`](conformance/build.py) | Fetches the pinned reference and lifts the chip out of it |
+| [`conformance/ref/driver.cpp`](conformance/ref/driver.cpp) | The driver that wraps those functions |
+| [`conformance/hardware.json`](conformance/hardware.json) | What this model asserts, and where each assertion comes from |
+| [`conformance/divergences.json`](conformance/divergences.json) | Where a source is weaker than it looks |
+| [`conformance/speed.py`](conformance/speed.py) | The throughput floor |
+| [`conformance/links.py`](conformance/links.py) | The weekly check that every cited address still answers |
+
+| Convention | Source |
+|:-----------|:-------|
+| Commit format | [Conventional Commits](https://www.conventionalcommits.org/) |
+| Format and lint | [ruff](https://docs.astral.sh/ruff/), configured in [pyproject.toml](pyproject.toml) |
+| Releases | [semantic-release](https://semantic-release.gitbook.io/), from the commit history |
+| Test naming | A sentence stating the behaviour, not the function name |
+
+[`AGENTS.md`](AGENTS.md) is the document for an agent working here.
+[`FAMILY.md`](FAMILY.md) is the standard this repository shares with the rest of
+the family, kept identical in every member above the marker at the end of its
+shared part.
 
 Measurements first. [CONTRIBUTING.md](CONTRIBUTING.md) has the gates a change is
 expected to pass, [SECURITY.md](SECURITY.md) says what belongs in a private
@@ -218,13 +302,28 @@ project is discussed.
 Never attach a copyrighted file, and never link to somewhere one can be
 downloaded. A digest identifies a file without carrying it.
 
+## References
+
+This repository carries no documents and no cartridges.
+
+**No manufacturer document for this part is known to exist.** It was searched for
+on 2026-08-21 and nothing was found; the chip appears in a single cartridge. That
+leaves the top rung of the authority ladder empty, which is recorded in
+[`conformance/hardware.json`](conformance/hardware.json) rather than papered over
+by promoting the rung below it.
+
+| Source | Used for |
+|:-------|:---------|
+| [Nintendo's documented OAM structure](https://archive.org/stream/SNESDevManual/book1_djvu.txt) | The shape of what this chip holds, which is the shape OAM expects. Where the two line up, Nintendo's figure is evidence about this chip even though Nintendo never described it |
+| [snes9xgit/snes9x](https://github.com/snes9xgit/snes9x) | The reference the walk compares against, pinned by commit in [`conformance/pinned.json`](conformance/pinned.json). Fetched at build time, never vendored, and it is a second implementation rather than a measurement |
+
 ## Citing this
 
 [CITATION.cff](CITATION.cff) is kept in step with the released version by the
 same script that stamps the package, so the version it names is the version that
 shipped.
 
-## Licence
+## License
 
 [MIT](LICENSE).
 

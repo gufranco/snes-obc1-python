@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any, override
 
 from . import chip
+from .errors import OutOfRange
 from .version import VERSION
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -144,7 +145,7 @@ def _outside(build: Callable[[], Any]) -> "Finding":
     """
     try:
         build().read(chip.WINDOW_END)
-    except chip.OutOfRange:
+    except OutOfRange:
         return Finding("outside the window", True, f"refuses {chip.WINDOW_END:#06x}")
     except Exception as trouble:
         return Finding(

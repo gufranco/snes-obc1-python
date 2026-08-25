@@ -31,6 +31,8 @@ package's own, for tools that carry save states around, not the reset line.
 
 from typing import override
 
+from .errors import OutOfRange
+
 WINDOW_START = 0x6000
 
 WINDOW_END = 0x8000
@@ -58,12 +60,10 @@ PACKED_MASK = 0x03
 UNWRITTEN = 0xFF
 
 
-class OutOfRange(Exception):
-    pass
-
-
 class Obc1:
     """One OBC1, and the window it puts over its own memory."""
+
+    __slots__ = ("address", "base", "ram", "shift")
 
     def __init__(self, ram: bytearray | None = None) -> None:
         self.ram = bytearray(RAM_BYTES)
