@@ -97,6 +97,14 @@ enable_error_code = [
 ]
 files = ["snesobc1", "conformance"]
 
+[[tool.mypy.overrides]]
+# The submodule is checked in its own repository, against its own gate. Following
+# imports into it here would report the state of somebody else's project, and a
+# finding nobody in this one can act on.
+module = ["snesdriver.*", "mapper.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
 [tool.coverage.run]
 source = ["snesobc1", "conformance"]
 branch = true

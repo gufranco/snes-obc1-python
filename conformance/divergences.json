@@ -3,7 +3,7 @@
   "sources": {
     "document": "None for the OBC1. Nintendo's OAM structure is documented and is what this chip feeds.",
     "reference": "snes9x, pinned by commit in conformance/pinned.json.",
-    "cartridge": "The one cartridge that carries this chip, whose driver is the only program that ever drove it."
+    "cartridge": "The one cartridge that carries this chip, whose driver is the only program that ever drove it. Read out of its own code by snes-driver-python, in both the American and the European release, and recorded in conformance/cartridges.json."
   },
   "divergences": [
     {
@@ -14,7 +14,7 @@
       "documentSays": "Nothing. No manufacturer document for the OBC1 is known to exist.",
       "referenceDoes": "Gives every register address, both base addresses and the memory size.",
       "packageFollows": "reference",
-      "reasoning": "One cartridge carried this chip, so there is no corpus of independent drivers to cross-check against and no second implementation that was not written by reading the same one. Everything except the packed offset rests on that.",
+      "reasoning": "One cartridge carried this chip, so there is no corpus of independent drivers to cross-check against and no second implementation that was not written by reading the same one. Everything except the packed offset rests on that. Since 2026-08-25 the register addresses no longer rest on that alone. conformance/against_cartridges.py walks the driver routine in both releases of the one cartridge without running any of it, and six of the seven addresses this package treats as registers are addresses that code reaches: 0x7FF0 through 0x7FF3, 0x7FF5 and 0x7FF6. The American and European builds agree on every one the American build reaches. That is the cartridge saying where the registers are rather than an emulator saying it, and it does not extend to what any of them does.",
       "wouldSettleIt": "A die photograph, a board schematic, or a Nintendo application note naming the part."
     },
     {

@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-python@v7
         with:
@@ -76,6 +78,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-python@v7
         with:
@@ -99,6 +103,8 @@ jobs:
         python: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-python@v7
         with:
@@ -140,11 +146,34 @@ jobs:
       - name: Coverage must be total
         run: python -m coverage report
 
+      # The reading this repository carries is checked into the tree, so this
+      # confirms it still describes the model rather than re-deriving it from a
+      # cartridge nobody can be assumed to hold. Re-deriving it needs
+      # conformance/against_cartridges.py and copies you own.
+      - name: The registers the cartridge reaches are the registers modelled
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          sys.path.insert(0, 'conformance')
+          from conformance import against_cartridges as against
+          found = against.recorded()
+          assert found, 'the reading is missing from the tree'
+          declared = {f'{at:#06x}' for at in against.declared()}
+          reached = set(found['confirmed'])
+          assert reached <= declared, sorted(reached - declared)
+          print(f'  {len(reached)} of {len(declared)} registers reached by the cartridges'
+                f\", read from {len(found['readFrom'])} of them\")
+          "
+        shell: bash
+
   speed:
     name: Throughput
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-python@v7
         with:
@@ -158,6 +187,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - uses: actions/setup-python@v7
         with:

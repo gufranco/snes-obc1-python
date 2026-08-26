@@ -78,7 +78,7 @@
       },
       "verified": false,
       "why": "The seven addresses that do not behave like memory.",
-      "evidence": "The reference implementation, corroborated by the driver in the one cartridge that carries this chip.",
+      "evidence": "Two readings that do not share a source. The reference implementation, and the driver routine in both releases of the one cartridge, walked without running it: six of the seven addresses are ones that code reaches, and the two releases agree. The seventh, 0x7FF4, is not reached by an instruction carrying its whole address, which is all a walk can see.",
       "howToSettleIt": "A die photograph, or a disassembly of that driver read independently."
     },
     "unwrittenByte": {

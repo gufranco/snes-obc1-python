@@ -48,6 +48,28 @@ says so rather than promoting a second implementation to the rung a data sheet
 would occupy, which would make a reader believe these figures were printed
 somewhere.
 
+**The addresses have a second reading now, and it is not an emulator.** The one
+cartridge is its own evidence: its driver routine is ordinary 65816 code, and
+walking it without running it says which addresses inside the part's window that
+code reaches. Six of the seven this package treats as registers are among them,
+`$7FF0` through `$7FF3`, `$7FF5` and `$7FF6`, and the American and European
+releases agree on every one the American release reaches. The reading is in
+[`conformance/cartridges.json`](conformance/cartridges.json) with the digests of
+both cartridges and none of their bytes, and
+[`conformance/against_cartridges.py`](conformance/against_cartridges.py)
+reproduces it from copies you own.
+
+Two limits, so the reading is not read for more than it says. It confirms where
+the registers are and says nothing about what any of them does, which still rests
+on the reference. And a walk sees only instructions carrying their whole address,
+so `$7FF4` going unreached is absence of evidence rather than evidence of
+absence: a routine that sets the data bank once and then uses short addressing is
+invisible to it.
+
+The same walk reaches `$7FF7` and `$7FFF`, which this package treats as ordinary
+memory. That is not a disagreement. The part answers with eight kilobytes of
+memory in that window and a game is free to use it.
+
 **What would settle or reopen it.** A die photograph, a board schematic, or a
 Nintendo application note naming the part.
 

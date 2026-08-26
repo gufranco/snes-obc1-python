@@ -1,0 +1,3 @@
+[submodule "snes-driver-python"]
+	path = snes-driver-python
+	url = https://github.com/gufranco/snes-driver-python.git
