@@ -1,7 +1,9 @@
 # Working in this repository
 
-This file is for a coding agent. A person reading it will not be harmed, but
-[README.md](README.md) is the document written for them.
+Read [FAMILY.md](FAMILY.md) first. It is the standard every member of this
+family carries, byte for byte, and it decides most questions before they are
+asked. What follows is only what is true of this member. [README.md](README.md)
+is the document written for a person.
 
 ## What this project is, in one paragraph
 
@@ -39,9 +41,6 @@ never be the far end of a cycle. There is one exception, because the chip makes
 one refusal.
 
 ## The authority ladder
-
-Every factual question is answered by the highest rung that has an answer, and a
-lower rung never overrules a higher one.
 
 1. **Manufacturer documentation.** There is none for this part. That is not a
    gap somebody has not filled in yet; it was searched for on 2026-08-21 and
