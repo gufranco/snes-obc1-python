@@ -1,31 +1,10 @@
-<div align="center">
+# OBC1
 
-<h1>OBC1</h1>
-
-<strong>The sprite remapper one Super Nintendo cartridge carried, settled against its own reference in every state it has.</strong>
-
-<br>
-<br>
+The sprite remapper one Super Nintendo cartridge carried, settled against its own reference in every state it has.
 
 [![CI](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
-[![Conformance](https://img.shields.io/badge/conformance-every%20state-brightgreen)](#is-it-right)
-[![Coverage](https://img.shields.io/badge/coverage-100%25%20statement%20%2B%20branch-brightgreen)](#working-on-it)
-[![Types](https://img.shields.io/badge/mypy-strict-blue)](pyproject.toml)
-[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)](pyproject.toml)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-</div>
-
-<p align="center">
-  <a href="#install">Install</a> &nbsp;|&nbsp;
-  <a href="#the-interface">The interface</a> &nbsp;|&nbsp;
-  <a href="#the-two-things-that-are-easy-to-get-wrong">The two traps</a> &nbsp;|&nbsp;
-  <a href="#the-reset-does-not-do-what-it-looks-like">The reset</a> &nbsp;|&nbsp;
-  <a href="#is-it-right">Is it right</a> &nbsp;|&nbsp;
-  <a href="https://github.com/gufranco/snes-obc1-python/issues">Issues</a>
-</p>
-
-**7** addresses · **256** states, all of them visited · **3,126** steps compared against the reference, **0** disagreements · **422** tests · **100%** statement and branch coverage · no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **422** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
