@@ -18,12 +18,12 @@ from . import chip as chip
 from . import errors as errors
 from . import models as models
 from .errors import OutOfRange, UnknownModelError
-from .models import DEFAULT_MODEL, MODELS, Model, describe
+from .models import MODELS, Model
 from .version import VERSION
 
 
 def Chip(  # noqa: N802
-    model: str = DEFAULT_MODEL, ram: bytearray | None = None, **options: Any
+    model: str | None = None, ram: bytearray | None = None, **options: Any
 ) -> chip.Chip:
     """A chip of the named model, sharing one interface across the family.
 
@@ -39,18 +39,16 @@ def Chip(  # noqa: N802
     argument, so a caller moving between members writes the same call and a typo
     is refused rather than ignored.
     """
-    return describe(model).build(ram, **options)
+    return models.lookup(model).build(ram, **options)
 
 
 __version__ = VERSION
 
 __all__ = [
-    "DEFAULT_MODEL",
     "MODELS",
     "Chip",
     "Model",
     "OutOfRange",
     "UnknownModelError",
     "__version__",
-    "describe",
 ]
