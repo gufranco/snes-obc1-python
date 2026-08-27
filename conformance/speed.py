@@ -82,7 +82,7 @@ class Timed:
 
 def measure(calls: int = CALLS, repeats: int = REPEATS) -> Timed:
     """Read through the window across all five addresses, and time it."""
-    chip = snesobc1.Chip("obc1")
+    chip = snesobc1.Chip("obc1").reset()
     chip.write(POINTER, 0x02)
     seconds = []
     for _ in range(repeats):
