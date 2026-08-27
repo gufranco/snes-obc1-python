@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -21,6 +22,17 @@ def _a_cartridge(body: bytes = b"", title: bytes = b"METAL COMBAT") -> bytes:
     held[0x7FD6] = 0x25
     held[0x7FD7] = 0x0B
     return bytes(held)
+
+
+def _named(*images: bytes) -> dict[str, dict[str, Any]]:
+    """A catalogue naming exactly the images a test made, so the gate lets them by."""
+    return {
+        against.digests_of(one)["sha256"]: {
+            "name": f"made-up-{at}.sfc",
+            **against.digests_of(one),
+        }
+        for at, one in enumerate(images)
+    }
 
 
 def _reaching(*addresses: int) -> bytes:
@@ -121,7 +133,9 @@ class RecordedTest(unittest.TestCase):
     def test_and_they_agree_on_every_register_the_american_one_reaches(self) -> None:
         found = against.recorded()
 
-        american, european = (set(one["confirmed"].split()) for one in found["readFrom"][::-1])
+        by_name = {one["name"]: set(one["confirmed"].split()) for one in found["readFrom"]}
+        american = next(one for name, one in by_name.items() if "(USA)" in name)
+        european = next(one for name, one in by_name.items() if "(Europe)" in name)
 
         self.assertEqual(american - european, set())
 
@@ -164,28 +178,31 @@ class MainTest(unittest.TestCase):
     def test_a_cartridge_it_can_read_is_recorded(self) -> None:
         said: list[str] = []
         with tempfile.TemporaryDirectory() as where:
-            (Path(where) / "one.sfc").write_bytes(_a_cartridge(_reaching(0x7FF0, 0x7FF6)))
+            image = _a_cartridge(_reaching(0x7FF0, 0x7FF6))
+            (Path(where) / "one.sfc").write_bytes(image)
 
-            code = against.main([where, where], say=said.append)
+            code = against.main([where, where], say=said.append, named=_named(image))
 
             self.assertEqual((code, (Path(where) / "cartridges.json").is_file()), (0, True))
 
     def test_a_cartridge_reaching_no_register_at_all_reports_failure(self) -> None:
         said: list[str] = []
         with tempfile.TemporaryDirectory() as where:
-            (Path(where) / "one.sfc").write_bytes(_a_cartridge(_reaching(0x6100)))
+            image = _a_cartridge(_reaching(0x6100))
+            (Path(where) / "one.sfc").write_bytes(image)
 
-            code = against.main([where, where], say=said.append)
+            code = against.main([where, where], say=said.append, named=_named(image))
 
         self.assertEqual(code, 1)
 
     def test_a_file_that_is_not_a_cartridge_at_all_is_skipped(self) -> None:
         said: list[str] = []
         with tempfile.TemporaryDirectory() as where:
+            image = _a_cartridge(_reaching(0x7FF0))
             (Path(where) / "notes.txt").write_bytes(b"not a cartridge")
-            (Path(where) / "one.sfc").write_bytes(_a_cartridge(_reaching(0x7FF0)))
+            (Path(where) / "one.sfc").write_bytes(image)
 
-            code = against.main([where, where], say=said.append)
+            code = against.main([where, where], say=said.append, named=_named(image))
 
         self.assertEqual(code, 0)
 
@@ -194,15 +211,50 @@ class MainTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as where:
             held = bytearray(_a_cartridge(_reaching(0x7FF0)))
             held[0x7FD6] = 0x03
+            image = _a_cartridge(_reaching(0x7FF0))
             (Path(where) / "other.sfc").write_bytes(bytes(held))
-            (Path(where) / "one.sfc").write_bytes(_a_cartridge(_reaching(0x7FF0)))
+            (Path(where) / "one.sfc").write_bytes(image)
 
-            code = against.main([where, where], say=said.append)
+            code = against.main([where, where], say=said.append, named=_named(image, bytes(held)))
 
             self.assertEqual(
                 (code, len(json.loads((Path(where) / "cartridges.json").read_text())["readFrom"])),
                 (0, 1),
             )
+
+
+class ManifestTest(unittest.TestCase):
+    def test_a_cartridge_the_manifest_names_comes_back_with_its_row(self) -> None:
+        image = _a_cartridge()
+
+        found = against.confirmed(image, _named(image))
+
+        self.assertEqual((found or {}).get("name"), "made-up-0.sfc")
+
+    def test_a_cartridge_the_manifest_does_not_name_is_refused(self) -> None:
+        self.assertIsNone(against.confirmed(_a_cartridge(), _named(_a_cartridge(b"\x01"))))
+
+    def test_a_row_that_disagrees_with_itself_is_reported(self) -> None:
+        image = _a_cartridge()
+        catalogue = _named(image)
+        next(iter(catalogue.values()))["crc32"] = "00000000"
+
+        with self.assertRaises(against.Malformed):
+            against.confirmed(image, catalogue)
+
+    def test_the_manifest_beside_this_one_names_the_cartridges_it_reads(self) -> None:
+        self.assertGreater(len(against.published()), 0)
+
+    def test_a_cartridge_the_manifest_does_not_name_is_skipped(self) -> None:
+        said: list[str] = []
+        with tempfile.TemporaryDirectory() as where:
+            (Path(where) / "one.sfc").write_bytes(_a_cartridge(_reaching(0x7FF0)))
+
+            code = against.main(
+                [where, where], say=said.append, named=_named(_a_cartridge(b"\x01"))
+            )
+
+        self.assertEqual((code, any("no cartridge" in one for one in said)), (2, True))
 
 
 if __name__ == "__main__":

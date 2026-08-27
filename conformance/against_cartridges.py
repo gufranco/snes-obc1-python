@@ -78,6 +78,45 @@ def digests_of(image: bytes) -> dict[str, str]:
     }
 
 
+class Malformed(Exception):
+    """A manifest row that does not describe the file it names."""
+
+
+MANIFEST = (
+    Path(__file__).resolve().parent.parent / "snes-driver-python" / "cartridges.manifest.json"
+)
+"""The published list of cartridges, which lives with the tool that reads them."""
+
+DIGESTS = ("crc32", "md5", "sha1", "sha256")
+
+
+def published() -> dict[str, dict[str, Any]]:
+    """Every cartridge the manifest names, by its sha256."""
+    held = json.loads(MANIFEST.read_text())
+    assert isinstance(held, dict), f"{MANIFEST} does not hold an object"
+    return {str(row["sha256"]): row for row in held["cartridges"]}
+
+
+def confirmed(image: bytes, named: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    """The manifest row this image is, or nothing if the manifest does not name it.
+
+    All four digests, not the one the lookup used, because a manifest row that
+    disagrees with itself is worth reporting rather than half-checking. And a
+    manifest at all, because a directory of files is not an evidence base: the
+    tree this reads from also holds fan translations and modified dumps, whose
+    driver code is a copy of a shipped cartridge's. One of those reached the
+    record before this gate existed, and counting it inflates agreement with a
+    copy of the evidence rather than a second witness.
+    """
+    found = digests_of(image)
+    row = named.get(found["sha256"])
+    if row is None:
+        return None
+    if any(str(row[one]) != found[one] for one in DIGESTS):
+        raise Malformed(f"{row['name']} is named in the manifest with digests it does not have")
+    return row
+
+
 def carries_the_part(image: bytes) -> bool:
     """Whether the cartridge declares the chipset this part ships under."""
     if len(image) < HEADER_AT + 32:
@@ -135,7 +174,11 @@ def recorded(where: Path | str | None = None) -> dict[str, Any]:
     return found
 
 
-def main(argv: Sequence[str], say: Callable[[str], object] = print) -> int:
+def main(
+    argv: Sequence[str],
+    say: Callable[[str], object] = print,
+    named: dict[str, dict[str, Any]] | None = None,
+) -> int:
     if len(argv) < 2:
         say("usage: against_cartridges.py <directory of cartridges> <output directory>")
         return 2
@@ -145,12 +188,15 @@ def main(argv: Sequence[str], say: Callable[[str], object] = print) -> int:
         say(f"  no such directory: {source}")
         return 2
 
+    catalogue = published() if named is None else named
     rows = []
     together: collections.Counter[int] = collections.Counter()
     for path in sorted(source.rglob("*")):
         if path.suffix.lower() not in SUFFIXES or not path.is_file():
             continue
         image = path.read_bytes()
+        if confirmed(image, catalogue) is None:
+            continue
         if not carries_the_part(image):
             continue
         found = reached(image)
@@ -181,7 +227,7 @@ def main(argv: Sequence[str], say: Callable[[str], object] = print) -> int:
             "saying it. No cartridge byte is recorded here."
         ),
         "producedBy": "https://github.com/gufranco/snes-driver-python",
-        "readFrom": rows,
+        "readFrom": sorted(rows, key=lambda row: str(row["name"])),
         "reached": {f"{at:#06x}": count for at, count in sorted(together.items())},
         **compare(dict(together)),
     }
