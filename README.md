@@ -4,7 +4,7 @@ The sprite remapper one Super Nintendo cartridge carried, settled against its ow
 
 [![CI](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **428** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **460** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
@@ -304,6 +304,13 @@ by promoting the rung below it.
 | [Nintendo's documented OAM structure](https://archive.org/stream/SNESDevManual/book1_djvu.txt) | The shape of what this chip holds, which is the shape OAM expects. Where the two line up, Nintendo's figure is evidence about this chip even though Nintendo never described it |
 | [snes9xgit/snes9x](https://github.com/snes9xgit/snes9x) | The reference the walk compares against, pinned by commit in [`conformance/pinned.json`](conformance/pinned.json). Fetched at build time, never vendored, and it is a second implementation rather than a measurement |
 
+
+Fetching it is a command rather than an exercise. [`conformance/documents.json`](conformance/documents.json) carries the full digest, the byte count and a fetchable address, and [`conformance/documents.py`](conformance/documents.py) brings it down into `docs/`, which git ignores, and refuses anything whose digest does not match.
+
+```bash
+python3 -m conformance.documents          # fetch and verify the digest
+python3 -m conformance.documents --check  # verify what is already here
+```
 ## Citing this
 
 [CITATION.cff](CITATION.cff) is kept in step with the released version by the
