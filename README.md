@@ -4,7 +4,7 @@ The sprite remapper one Super Nintendo cartridge carried, settled against its ow
 
 [![CI](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **427** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **428** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
