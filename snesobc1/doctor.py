@@ -108,9 +108,17 @@ def _package() -> "Finding":
 
 
 def _chip(build: Callable[[], Any]) -> "Finding":
-    """Whether the chip builds, saying exactly what stopped it if not."""
+    """Whether the chip builds and resets, saying what stopped it if not.
+
+    The reset is driven rather than described. It writes every byte of the
+    memory and then derives the base and the pointer from the bytes it just
+    wrote, so it is both the only way this chip reaches a state that does not
+    depend on what the cartridge held and the one path a report can exercise
+    without anybody's cartridge.
+    """
     try:
         one = build()
+        one.reset()
     except Exception as trouble:
         return Finding(
             "obc1",
@@ -123,7 +131,7 @@ def _chip(build: Callable[[], Any]) -> "Finding":
         "obc1",
         True,
         f"answers {chip.WINDOW_START:#06x} to {chip.WINDOW_END - 1:#06x},"
-        f" {len(one.ram)} bytes behind it, base {one.base:#06x}",
+        f" {len(one.ram)} bytes behind it, resets to base {one.base:#06x}",
     )
 
 

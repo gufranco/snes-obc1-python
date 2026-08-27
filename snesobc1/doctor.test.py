@@ -6,7 +6,7 @@ import tempfile
 import unittest
 import unittest.mock
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn, override
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -92,6 +92,22 @@ class ExamineTest(unittest.TestCase):
         for one in doctor.examine():
             if one.name == "obc1":
                 self.assertIn("0x6000", one.detail)
+
+    def test_and_with_the_base_the_reset_derived(self) -> None:
+        """Driven rather than described, so a reset that stopped deriving shows here."""
+        found = [one for one in doctor.examine() if one.name == "obc1"]
+
+        self.assertIn("resets to base 0x", found[0].detail)
+
+    def test_a_chip_that_builds_and_will_not_reset_is_reported_as_broken(self) -> None:
+        class WillNotReset(chip.Chip):
+            @override
+            def reset(self) -> NoReturn:
+                raise Complaint("the line did nothing")
+
+        found = [one for one in doctor.examine(build=WillNotReset) if one.name == "obc1"]
+
+        self.assertFalse(found[0].ok)
 
 
 class WindowTest(unittest.TestCase):
