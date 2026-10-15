@@ -1,12 +1,3 @@
-"""Hold this model's constants to hardware.json, and to their standing.
-
-No manufacturer document names the OBC1, so all but one of these rest on a
-reference implementation and say so. The exception is worth the file on its own:
-the offset from a base address to the packed attributes is exactly the size of
-the OAM low table Nintendo documents, because feeding OAM is the whole of what
-this chip does.
-"""
-
 import json
 import sys
 import unittest
@@ -20,10 +11,8 @@ from snesobc1 import chip
 HERE = Path(__file__).resolve().parent
 
 SPRITES = 128
-"""Sprites in an OAM table, from Nintendo's figure by way of snes-graphics-python."""
 
 LOW_ENTRY_BYTES = 4
-"""Bytes each one takes in the low table, from the same figure."""
 
 
 def declared(name: str) -> dict[str, Any]:

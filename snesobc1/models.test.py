@@ -14,11 +14,6 @@ class CatalogueTest(unittest.TestCase):
         self.assertEqual(sorted(models.MODELS), ["obc1"])
 
     def test_and_a_caller_has_to_name_it_rather_than_getting_it_by_default(self) -> None:
-        """One part is the tempting place to allow a default and the worst one.
-
-        A caller who learns to leave the model out here writes the same call
-        against a member covering sixteen parts and gets one nobody picked.
-        """
         with self.assertRaises(UnknownModelError):
             snesobc1.Chip()
 

@@ -1,25 +1,3 @@
-"""Settle the chip against its own reference, in every state it has.
-
-This chip is small enough that there is no need to sample it. Its state is a
-base, one of two, and a pointer, one of a hundred and twenty eight, with a shift
-the pointer already decides. Every combination is reachable in a few writes, so
-every combination is visited.
-
-For each of them the walk writes through each of the five window addresses and
-reads each one back, then dumps all eight kilobytes and compares them byte for
-byte against the reference. That covers both halves of the remapping: where a
-value lands, and what a read of the same address hands back afterwards.
-
-The reset is walked separately, because it is the part most likely to be modelled
-wrong. It looks like it recovers the base and pointer from memory, and it does
-not: it sets every byte first and then reads the bytes it just wrote, so it
-always comes up the same way. The walk leaves memory in a chosen state, resets,
-and confirms both sides ignore what was there.
-
-Usage:
-    python3 conformance/exhaustive.py [--driver PATH]
-"""
-
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -58,7 +36,6 @@ class Options:
 
 
 def walk() -> list[tuple[str, int, int]]:
-    """Every base and pointer the chip has, with each window address exercised."""
     steps = [("reset", 0, 0)]
     for base in BASE_VALUES:
         steps.append(("w", chip.BASE_REGISTER, base))
@@ -73,7 +50,6 @@ def walk() -> list[tuple[str, int, int]]:
 
 
 def resetting() -> list[tuple[str, int, int]]:
-    """The reset, which ignores whatever the cartridge held."""
     steps = []
     for base in BASE_VALUES:
         for pointer in RECOVERED_POINTERS:
@@ -86,7 +62,6 @@ def resetting() -> list[tuple[str, int, int]]:
 
 
 def render(steps: Sequence[tuple[str, int, int]]) -> str:
-    """The steps as the driver reads them, one to a line."""
     lines = []
     for verb, first, second in steps:
         if verb in BARE:
@@ -99,7 +74,6 @@ def render(steps: Sequence[tuple[str, int, int]]) -> str:
 
 
 def replay(steps: Sequence[tuple[str, int, int]]) -> list[str]:
-    """The same steps through the model, producing the same shape of transcript."""
     found = chip.Chip()
     transcript = []
     for verb, first, second in steps:
@@ -119,7 +93,6 @@ def replay(steps: Sequence[tuple[str, int, int]]) -> list[str]:
 
 
 def ask(steps: Sequence[tuple[str, int, int]], driver: Path | str) -> list[str]:
-    """The same steps through the reference, whose answers decide."""
     done = subprocess.run(
         [driver],
         input=render(steps),
@@ -136,7 +109,6 @@ def ask(steps: Sequence[tuple[str, int, int]], driver: Path | str) -> list[str]:
 def differences(
     expected: Sequence[str], actual: Sequence[str]
 ) -> list[tuple[int, str | None, str | None]]:
-    """Where the two transcripts stop agreeing, by line."""
     found = []
     for index in range(max(len(expected), len(actual))):
         theirs = expected[index] if index < len(expected) else None

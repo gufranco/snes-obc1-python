@@ -1,25 +1,3 @@
-"""Look at this machine and say what is actually here, so a report can be believed.
-
-What goes wrong with this package is rarely a defect in it. It is a Python too
-old to run it, a reference driver that was never built so the exhaustive check
-quietly did nothing, or a disagreement about which reference it is even being
-held to. All of those look the same from outside: the bytes land in the wrong
-place.
-
-So this looks, and prints what it found in a form that can be pasted into an
-issue as it stands.
-
-Two rules shape it, and they are the whole point.
-
-Nothing is hidden. A check that fails says what it saw, and a check that itself
-throws is caught and reported as what it threw, named by its type. Swallowing
-either would leave a report that says everything is fine on a machine where
-something is not, which is worse than no report.
-
-Nothing is inferred. Every line is something looked at on this machine just now,
-including a write actually pushed through the window and read back out of memory.
-"""
-
 import hashlib
 import json
 import platform
@@ -31,11 +9,6 @@ from typing import Any, override
 
 
 def _version(where: Path | None = None) -> str:
-    """The package version, read out of the file beside this one.
-
-    Read rather than imported. Importing it would go through the package, and a
-    package that will not import is one of the things this exists to report.
-    """
     found = re.search(
         r"""VERSION\s*[:=][^"']*["']([^"']+)["']""",
         (where or Path(__file__).resolve().parent / "version.py").read_text(),
@@ -63,15 +36,11 @@ DRIVER = ROOT / "conformance" / "ref" / "driver"
 OLDEST_PYTHON = (3, 12)
 
 WRITTEN = 0xA5
-"""A value with no symmetry, so a byte that landed by accident does not pass for one that landed."""
 
 POINTED_AT = 0x02
-"""Where the window is put before the write, chosen so the answer is not offset zero."""
 
 
 class Finding:
-    """One thing that was looked at, and what was there."""
-
     def __init__(self, name: str, ok: bool, detail: str, advice: str | None = None) -> None:
         self.name = name
         self.ok = ok
@@ -80,12 +49,10 @@ class Finding:
 
     @property
     def line(self) -> str:
-        """The one-line form, which is what a reader scans."""
         return f"  {'ok  ' if self.ok else '   !'}  {self.name}: {self.detail}"
 
     @property
     def report(self) -> str:
-        """The same, with what to do about it when there is something to do."""
         if self.ok or not self.advice:
             return self.line
         return f"{self.line}\n         {self.advice}"
@@ -109,14 +76,6 @@ def _package() -> "Finding":
 
 
 def _chip(build: Callable[[], Any]) -> "Finding":
-    """Whether the chip builds and resets, saying what stopped it if not.
-
-    The reset is driven rather than described. It writes every byte of the
-    memory and then derives the base and the pointer from the bytes it just
-    wrote, so it is both the only way this chip reaches a state that does not
-    depend on what the cartridge held and the one path a report can exercise
-    without anybody's cartridge.
-    """
     try:
         one = build()
         one.reset()
@@ -137,13 +96,6 @@ def _chip(build: Callable[[], Any]) -> "Finding":
 
 
 def _window(build: Callable[[], Any]) -> "Finding":
-    """That a write through the window lands where the pointer says it does.
-
-    This is the whole chip in one line, and it is the thing a report is usually
-    about. Pointing the window somewhere and writing one byte through it is
-    cheap, needs nobody's cartridge, and separates a chip that is wired from one
-    that is merely importable.
-    """
     try:
         one = build()
         one.write(chip.POINTER_REGISTER, POINTED_AT)
@@ -167,12 +119,6 @@ def _window(build: Callable[[], Any]) -> "Finding":
 
 
 def _outside(build: Callable[[], Any]) -> "Finding":
-    """That an address outside the window is refused rather than answered.
-
-    A chip that answers everywhere is the failure that hides: the console reads
-    something plausible from an address this part never drove, and nothing
-    downstream can tell it apart from a real answer.
-    """
     try:
         build().read(chip.WINDOW_END)
     except OutOfRange:
@@ -193,11 +139,6 @@ def _outside(build: Callable[[], Any]) -> "Finding":
 
 
 def _reference(where: Path | str) -> "Finding":
-    """Which implementation this is held to, and at which commit.
-
-    Two people comparing against two commits of the same reference will disagree
-    and both be right. The digest of the file that pins it is what ends that.
-    """
     try:
         raw = Path(where).read_bytes()
     except OSError as trouble:
@@ -234,13 +175,6 @@ def _reference(where: Path | str) -> "Finding":
 
 
 def _driver(where: Path | str) -> "Finding":
-    """Whether the reference is built, since its absence is silent otherwise.
-
-    The exhaustive check builds somebody else's implementation and asks it every
-    address. That build is not needed to use this package, and a machine without
-    it is the normal case rather than a broken one. It is reported so that nobody
-    reads a run that skipped as a run that passed.
-    """
     found = Path(where).exists()
     return Finding(
         "reference driver",
@@ -260,7 +194,6 @@ def examine(
     pin: Path | str = PIN,
     driver: Path | str = DRIVER,
 ) -> list["Finding"]:
-    """Everything worth looking at on this machine, in the order a reader wants it."""
     return [
         _python(),
         _package(),
@@ -273,7 +206,6 @@ def examine(
 
 
 def report(found: list["Finding"]) -> list[str]:
-    """The lines a person pastes into an issue."""
     unwell = [one for one in found if not one.ok]
     lines = [f"snesobc1 {VERSION} on {platform.python_version()}, {platform.system()}", ""]
     lines.append("  the machine")

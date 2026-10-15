@@ -1,5 +1,3 @@
-"""Reading the register set out of the one cartridge, and holding the model to it."""
-
 import json
 import sys
 import tempfile
@@ -25,7 +23,6 @@ def _a_cartridge(body: bytes = b"", title: bytes = b"METAL COMBAT") -> bytes:
 
 
 def _named(*images: bytes) -> dict[str, dict[str, Any]]:
-    """A catalogue naming exactly the images a test made, so the gate lets them by."""
     return {
         against.digests_of(one)["sha256"]: {
             "name": f"made-up-{at}.sfc",
@@ -36,7 +33,6 @@ def _named(*images: bytes) -> dict[str, dict[str, Any]]:
 
 
 def _reaching(*addresses: int) -> bytes:
-    """A routine that stores to each address in turn and returns."""
     body = bytearray()
     for address in addresses:
         body += bytes((0x8F, address & 0xFF, address >> 8, 0x00))

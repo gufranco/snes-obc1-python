@@ -1,12 +1,3 @@
-"""The one model this package publishes, and how a caller names it.
-
-One entry rather than none. The family's other parts carry a catalogue because
-they have several models, and a caller moving between them should not have to
-learn that this one is the exception. A catalogue of one also gives the
-constructor a model argument to reject, so a typo is refused here rather than
-ignored.
-"""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, override
@@ -19,8 +10,6 @@ from .errors import UnknownModelError
 
 
 class Model:
-    """One chip: what it is, where it answers, and how to build one."""
-
     __slots__ = ("aliases", "name", "summary")
 
     def __init__(self, name: str, summary: str, aliases: Sequence[str] = ()) -> None:
@@ -66,19 +55,6 @@ def _normalise(name: str) -> str:
 
 
 def lookup(name: str | None) -> Model:
-    """The model of that name, however it happens to be written.
-
-    Naming nothing is refused rather than filled in. A default would be the one
-    implicit thing in the call that builds a part, and it is worst where it looks
-    most harmless: a caller who learns to leave the model out against a member
-    covering one part writes the same call against a member covering sixteen.
-    The refusal names every model there is, so somebody who did not know what to
-    pass learns it here rather than from the source.
-
-    Not exported from the package. What a caller wants is the part, and the part
-    carries its own model; handing back a description of a part nobody built
-    reads like a test fixture rather than an interface.
-    """
     if name is None:
         raise UnknownModelError(
             "no model was named, and this package will not choose one for you."

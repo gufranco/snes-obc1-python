@@ -1,34 +1,3 @@
-"""The OBC1, which is eight kilobytes of memory with seven addresses that lie.
-
-One cartridge carried this chip. It holds sprite attributes and hands the console
-a moving window onto them, so a program can write one sprite's four bytes to the
-same four addresses every time and let the chip decide where they land. That is
-the whole idea and the whole difficulty.
-
-Six of the addresses are that window. Four reach four consecutive bytes at a
-place a pointer register chooses, and a fifth reaches a single byte a quarter as
-far along, where four sprites share one byte two bits each. Writing through that
-fifth address changes two bits and leaves the other six, which is the one place a
-read-modify-write happens inside the chip rather than in the program.
-
-Two things are easy to get wrong.
-
-The pointer register does two jobs from one byte. Its low seven bits choose which
-sprite the window points at, and its low two bits, the same two, also choose which
-corner of the shared byte the fifth address reaches. They are not separate fields.
-
-And every write to a register is also written straight into memory at the address
-it arrived on, underneath the remapping. That looks like it should let a reset
-recover the state, and it does not: the reset sets every byte to `FF` first and
-reads the base and pointer back out of the bytes it just wrote, so it always
-comes up in the same state no matter what was there. The read-back is vestigial.
-Modelling it as a recovery would be modelling something the chip does not do.
-
-Restoring a saved cartridge is a different operation and is spelled differently:
-`adopt` takes an image and derives the state from it without wiping. That is this
-package's own, for tools that carry save states around, not the reset line.
-"""
-
 from typing import override
 
 from .errors import OutOfRange
@@ -61,8 +30,6 @@ UNWRITTEN = 0xFF
 
 
 class Chip:
-    """One OBC1, and the window it puts over its own memory."""
-
     __slots__ = ("address", "base", "model", "ram", "shift")
 
     model: str
@@ -78,17 +45,10 @@ class Chip:
             self.adopt(ram)
 
     def reset(self) -> "Chip":
-        """What the reset line does, which is less useful than it looks.
-
-        Every byte is set before anything is read, so the base and pointer are
-        derived from the bytes the reset itself just wrote. Whatever the cartridge
-        held is gone, and the chip always comes up the same way.
-        """
         self.ram = bytearray([UNWRITTEN] * RAM_BYTES)
         return self._derive()
 
     def adopt(self, ram: bytearray) -> "Chip":
-        """Take a saved image and derive the state from it, which no reset does."""
         self.ram = bytearray(ram)
         return self._derive()
 
