@@ -35,9 +35,6 @@ packages = ["snesobc1"]
 [tool.setuptools.dynamic]
 version = { attr = "snesobc1.version.VERSION" }
 
-[tool.setuptools.exclude-package-data]
-snesobc1 = ["*.test.py"]
-
 [tool.ruff]
 target-version = "py312"
 line-length = 100
