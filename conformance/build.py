@@ -14,6 +14,10 @@ DEFAULT_SOURCES = str(Path.home() / ".cache" / "snes-obc1-reference")
 
 DEFAULT_OUTPUT = str(ROOT / "ref" / "driver")
 
+GENERATED = "generated"
+
+BODIES = "obc1_bodies.inc"
+
 COMPILER = "g++"
 
 STANDARD = "c++17"
@@ -82,6 +86,15 @@ def extract(sources: Path | str, pinned: Mapping[str, Any], into: Path | str) ->
     return Path(into)
 
 
+def generated(output: Path | str) -> Path:
+    return Path(output).parent / GENERATED
+
+
+def write_bodies(sources: Path | str, pinned: Mapping[str, Any], into: Path | str) -> Path:
+    Path(into).mkdir(parents=True, exist_ok=True)
+    return extract(sources, pinned, Path(into) / BODIES)
+
+
 def compile_command(
     sources: Path | str, output: Path | str, driver: Path | str | None = None
 ) -> list[str]:
@@ -90,6 +103,7 @@ def compile_command(
         f"-std={STANDARD}",
         "-O2",
         "-w",
+        f"-I{generated(output)}",
         f"-I{ROOT / 'ref'}",
         "-o",
         str(output),
@@ -145,8 +159,7 @@ def run(argv: Sequence[str]) -> int:
     pinned = reference(chosen.pinned)
     if not sources.exists():
         sources = fetch(pinned, sources)
-    Path(chosen.output).parent.mkdir(parents=True, exist_ok=True)
-    extract(sources, pinned, ROOT / "ref" / "obc1_bodies.inc")
+    write_bodies(sources, pinned, generated(chosen.output))
 
     done = subprocess.run(
         compile_command(sources, Path(chosen.output), chosen.driver),

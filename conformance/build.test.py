@@ -13,6 +13,28 @@ from conformance import build
 
 HAS_COMPILER = shutil.which(build.COMPILER) is not None
 
+REPOSITORY = Path(__file__).resolve().parent.parent
+
+
+def tracked_changes() -> str:
+    return subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=REPOSITORY,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+
+
+def tracked_under_ref() -> list[str]:
+    return subprocess.run(
+        ["git", "ls-files", "conformance/ref"],
+        cwd=REPOSITORY,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+
 
 class DefinitionTest(unittest.TestCase):
     def test_the_reference_is_pinned_to_a_commit(self) -> None:
@@ -172,9 +194,11 @@ class FetchTest(unittest.TestCase):
 @unittest.skipUnless(HAS_COMPILER, "no compiler available")
 class WholeBuildTest(unittest.TestCase):
     def test_a_build_fetches_what_it_needs_and_reports_what_it_built(self) -> None:
+        # Arrange
         upstream = LocalUpstream()
         working = Path(tempfile.mkdtemp())
 
+        # Act
         answered = build.main(
             [
                 "--pinned",
@@ -188,8 +212,10 @@ class WholeBuildTest(unittest.TestCase):
             ]
         )
 
+        # Assert
         self.assertEqual(answered, 0)
         self.assertTrue((working / "built").exists())
+        self.assertTrue((working / build.GENERATED / build.BODIES).exists())
 
 
 class ExtractTest(unittest.TestCase):
@@ -238,6 +264,63 @@ class CompileFailureTest(unittest.TestCase):
         )
 
         self.assertEqual(answered, 1)
+
+
+class GeneratedOutputTest(unittest.TestCase):
+    def test_writing_the_bodies_touches_no_tracked_path(self) -> None:
+        # Arrange
+        upstream = LocalUpstream()
+        into = Path(tempfile.mkdtemp()) / build.GENERATED
+        before = tracked_changes()
+
+        # Act
+        written = build.write_bodies(upstream.where, upstream.pinned(), into)
+
+        # Assert
+        self.assertEqual((written, tracked_changes()), (into / build.BODIES, before))
+
+    def test_the_bodies_land_beside_the_driver_in_their_own_directory(self) -> None:
+        # Arrange
+        output = Path("/out/driver")
+
+        # Act
+        found = build.generated(output)
+
+        # Assert
+        self.assertEqual(found, Path("/out/generated"))
+
+    def test_the_default_place_for_them_is_ignored(self) -> None:
+        # Arrange
+        where = build.generated(build.DEFAULT_OUTPUT) / build.BODIES
+
+        # Act
+        ignored = subprocess.run(
+            ["git", "check-ignore", "-q", str(where)], cwd=REPOSITORY, check=False
+        )
+
+        # Assert
+        self.assertEqual(ignored.returncode, 0)
+
+    def test_no_tracked_file_under_ref_carries_a_name_the_build_writes(self) -> None:
+        # Arrange
+        written = {build.BODIES, Path(build.DEFAULT_OUTPUT).name, build.GENERATED}
+
+        # Act
+        tracked = tracked_under_ref()
+
+        # Assert
+        self.assertEqual(sorted(set(tracked) & {f"conformance/ref/{one}" for one in written}), [])
+
+    def test_the_compiler_looks_in_the_generated_directory_first(self) -> None:
+        # Arrange
+        output = Path("/out/driver")
+
+        # Act
+        command = build.compile_command(Path("/sources"), output)
+
+        # Assert
+        includes = [item for item in command if item.startswith("-I")]
+        self.assertEqual(includes[0], "-I/out/generated")
 
 
 class EntryTest(unittest.TestCase):

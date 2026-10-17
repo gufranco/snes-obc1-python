@@ -161,7 +161,7 @@ snesobc1/
   version.py     rewritten by the release job and by nothing else
 conformance/
   pinned.json    which reference, at which commit, and the markers that bound it
-  build.py       fetching it and lifting the chip's two functions out
+  build.py       fetching it and lifting the chip's two functions out, into ref/generated/
   exhaustive.py  every state the chip has, against that reference
   ref/driver.cpp the driver that wraps those two functions
   hardware.json  what this model asserts, and where each assertion comes from
@@ -179,9 +179,16 @@ tell you. It cannot tell you either of them is the chip. Do not write a sentence
 anywhere in this repository that treats agreement with it as verification against
 hardware.
 
-- **`conformance/ref/` is built, not committed.** The fetched source is somebody
-  else's work under its own licence. A test that reads it and does not say so
-  when it is absent passes here and fails everywhere else.
+- **What the build makes is never committed.** The fetched source is somebody
+  else's work under its own licence. `python3 -m conformance.build` keeps the
+  sources in `~/.cache/snes-obc1-reference`, writes the two lifted functions to
+  `conformance/ref/generated/obc1_bodies.inc` and the driver to
+  `conformance/ref/driver`. The cache sits outside the repository and git
+  ignores the other two. The only tracked file under `conformance/ref/` is
+  `driver.cpp`, and `build.test.py` fails if a build changes a tracked path or a
+  generated name gets tracked. A test that reads the
+  fetched source and does not say so when it is absent passes here and fails
+  everywhere else.
 - **The markers that bound the two functions come from the pin.** A file whose
   text has moved fails loudly rather than yielding something else, and that is on
   purpose. If the build starts failing after a bump, read the upstream commit

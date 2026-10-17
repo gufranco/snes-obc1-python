@@ -17,6 +17,7 @@ docs/
 specs/
 
 conformance/ref/driver
+conformance/ref/generated/
 
 *.rom
 *.bin
