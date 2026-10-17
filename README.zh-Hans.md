@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** 个地址，**256** 个状态，全部访问过，**3,126** 步与参考实现对比，**0** 处分歧，**633** 个测试，**100%** 语句和分支覆盖率，无依赖
+**7** 个地址，**256** 个状态，全部访问过，**3,126** 步与参考实现对比，**0** 处分歧，**638** 个测试，**100%** 语句和分支覆盖率，无依赖
 
 ```python
 from snesobc1 import Chip
@@ -296,7 +296,7 @@ snes9x 是第二个实现，而不是对芯片的测量。与它一致只说明�
 ```bash
 uvx ruff@0.16.3 format --check .
 uvx ruff@0.16.3 check .
-uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
+uvx --python 3.12 --with types-setuptools==84.0.0.20260812 mypy==1.14.1
 cov=(uvx --python 3.12 --from coverage==7.6.10 --with setuptools==84.0.0 coverage)
 "${cov[@]}" erase
 for file in $(find snesobc1 conformance -name '*.test.py' | sort); do

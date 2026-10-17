@@ -82,7 +82,6 @@ ignore = [
 # matter in a model of hardware are the ones where a width, a mask or a None
 # crosses a boundary, and those are exactly what the optional classes catch.
 strict = true
-follow_untyped_imports = true
 python_version = "3.12"
 warn_unreachable = true
 warn_no_return = true

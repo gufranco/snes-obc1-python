@@ -8,7 +8,7 @@ English | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | [繁�
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **633** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **638** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
@@ -296,7 +296,7 @@ The cartridge's own code is a second source for the register addresses. [`confor
 ```bash
 uvx ruff@0.16.3 format --check .
 uvx ruff@0.16.3 check .
-uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
+uvx --python 3.12 --with types-setuptools==84.0.0.20260812 mypy==1.14.1
 cov=(uvx --python 3.12 --from coverage==7.6.10 --with setuptools==84.0.0 coverage)
 "${cov[@]}" erase
 for file in $(find snesobc1 conformance -name '*.test.py' | sort); do

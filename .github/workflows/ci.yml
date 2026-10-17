@@ -90,11 +90,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        run: pipx install uv==0.13.1
+      - name: Install the type checker and the build backend's stubs
+        run: |
+          pipx install mypy==1.14.1
+          pipx inject mypy types-setuptools==84.0.0.20260812
 
       - name: Check types, configured in pyproject.toml so local runs match
-        run: uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
+        run: mypy
 
   test:
     name: Tests on Python ${{ matrix.python }}
