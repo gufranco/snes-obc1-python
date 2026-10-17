@@ -1,3 +1,4 @@
+---
 name: CI
 
 on:
@@ -51,13 +52,12 @@ jobs:
       - name: Check that every JSON file is formatted
         run: pnpm run format:check
 
-      # The workflows are the one thing here nothing else checks, and a mistake
-      # in them is only visible once a run has already gone wrong. The archive
-      # is verified by digest before anything in it runs.
-      - name: Check the workflows themselves
+      - name: Check the workflows, from an archive verified by digest
         run: |
+          release="https://github.com/rhysd/actionlint/releases/download"
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
           curl -fsSL -o actionlint.tar.gz \
-            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+            "${release}/v${ACTIONLINT_VERSION}/${archive}"
           echo "${ACTIONLINT_SHA256}  actionlint.tar.gz" | sha256sum -c -
           tar -xzf actionlint.tar.gz actionlint
           ./actionlint -color
@@ -66,6 +66,11 @@ jobs:
         env:
           ACTIONLINT_VERSION: "1.7.12"
           ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+
+      - name: Lint every YAML file
+        run: |
+          pipx install yamllint==1.38.0
+          yamllint --strict .
 
       - name: Lint the shell scripts
         run: |
@@ -88,10 +93,7 @@ jobs:
       - name: Install mypy
         run: pipx install mypy==1.14.1
 
-      # Strict, with every optional error class the checker offers. The
-      # configuration lives in pyproject.toml so this run and a local one are
-      # the same run.
-      - name: Check types
+      - name: Check types, configured in pyproject.toml so local runs match
         run: mypy
 
   test:
@@ -116,7 +118,13 @@ jobs:
       - name: Read the pinned reference commit
         id: pin
         run: |
-          commit=$(python -c "import json,pathlib;print(json.loads(pathlib.Path('conformance/pinned.json').read_text())['reference']['commit'])")
+          commit=$(python - <<'PY'
+          import json
+          import pathlib
+          held = json.loads(pathlib.Path("conformance/pinned.json").read_text())
+          print(held["reference"]["commit"])
+          PY
+          )
           echo "commit=${commit}" >> "${GITHUB_OUTPUT}"
 
       - name: Cache the reference sources
@@ -125,9 +133,6 @@ jobs:
           path: ~/.cache/snes-obc1-reference
           key: reference-${{ steps.pin.outputs.commit }}
 
-      # The tests that compare against the reference are the ones the coverage
-      # gate needs, so the driver is built here as well as in the conformance
-      # job. Skipping them would leave the gate measuring less than it claims.
       - name: Build the driver the comparison tests need
         run: python -m conformance.build
 
@@ -146,11 +151,7 @@ jobs:
       - name: Coverage must be total
         run: python -m coverage report
 
-      # The reading this repository carries is checked into the tree, so this
-      # confirms it still describes the model rather than re-deriving it from a
-      # cartridge nobody can be assumed to hold. Re-deriving it needs
-      # conformance/against_cartridges.py and copies you own.
-      - name: The registers the cartridge reaches are the registers modelled
+      - name: The registers the recorded reading reaches are the registers modelled
         run: |
           python -c "
           import sys
@@ -197,7 +198,13 @@ jobs:
       - name: Read the pinned reference commit
         id: pin
         run: |
-          commit=$(python -c "import json,pathlib;print(json.loads(pathlib.Path('conformance/pinned.json').read_text())['reference']['commit'])")
+          commit=$(python - <<'PY'
+          import json
+          import pathlib
+          held = json.loads(pathlib.Path("conformance/pinned.json").read_text())
+          print(held["reference"]["commit"])
+          PY
+          )
           echo "commit=${commit}" >> "${GITHUB_OUTPUT}"
 
       - name: Cache the reference sources
@@ -210,8 +217,7 @@ jobs:
       - name: Build the driver around them
         run: python -m conformance.build
 
-      # Every state the chip has, so there is no shorter run to fall back to.
-      - name: Settle the chip against the reference
+      - name: Settle every state of the chip against the reference
         run: python -m conformance.exhaustive
 
   package:

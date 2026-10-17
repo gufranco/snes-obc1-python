@@ -1,3 +1,4 @@
+---
 name: Something is wrong
 description: A write lands in the wrong place, or nothing works at all
 labels: ["bug"]
