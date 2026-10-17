@@ -6,6 +6,7 @@ from typing import Any, override
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import snesobc1
 from snesobc1 import chip
 
 HERE = Path(__file__).resolve().parent
@@ -122,6 +123,36 @@ class ConstantTest(unittest.TestCase):
         fresh = chip.Chip()
 
         self.assertEqual(fresh.read(chip.WINDOW_START), chip.UNWRITTEN)
+
+
+SPRITE_MARK = 0x5A
+
+
+def readings(part: Any, addresses: range) -> list[int]:
+    return [part.read(at) for at in addresses]
+
+
+class PackedOffsetTest(unittest.TestCase):
+    def test_the_packed_bits_land_the_printed_offset_past_the_sprite_bytes(self) -> None:
+        # Arrange
+        facts = declared("hardware.json")["facts"]
+        registers = {name: int(at, 16) for name, at in facts["registers"]["value"].items()}
+        part = snesobc1.Chip("obc1")
+        part.write(registers["pointer"], 0)
+        part.write(registers["first"], SPRITE_MARK)
+        memory = range(facts["windowStart"]["value"], registers["first"])
+        sprite = next(at for at in memory if part.read(at) == SPRITE_MARK)
+        before = readings(part, memory)
+
+        # Act
+        part.write(registers["packed"], 0)
+
+        # Assert
+        after = readings(part, memory)
+        moved = [
+            at - sprite for at, was, now in zip(memory, before, after, strict=True) if was != now
+        ]
+        self.assertEqual(moved, [facts["packedOffset"]["value"]])
 
 
 class DivergenceTest(unittest.TestCase):

@@ -123,6 +123,13 @@ python3 -m conformance.build
 python3 -m conformance.exhaustive
 ```
 
+The record's one quote is checked against the page it cites, in a copy of the
+manual held under `docs/manufacturer/`:
+
+```bash
+python3 -m conformance.quotes
+```
+
 Everything under `conformance/` runs as a module. Run as a script, its own
 directory goes on the import path and a file there shadows any standard library
 module of the same name.
@@ -158,6 +165,7 @@ conformance/
   ref/driver.cpp the driver that wraps those two functions
   hardware.json  what this model asserts, and where each assertion comes from
   divergences.json  where a source is weaker than it looks
+  quotes.py      every quote in the record, found on the page of the manual it cites
   links.py       the weekly check that every cited address still answers
   speed.py       the throughput floor
 ```

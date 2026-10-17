@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**596**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
+**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**612**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
 
 ```python
 from snesobc1 import Chip
@@ -164,6 +164,7 @@ print(hex(chip.read(0x6000)))
 | `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT` | 0はレジスタに到達、1はどれにも未到達、2は引数が2つ未満、ディレクトリなし、またはこの部品を持つカートリッジなし |
 | `python3 -m conformance.package` | `WHEEL` | 0はすべてのモジュールが同梱されテストは含まれない、1は不具合またはファイルなし、2は引数なし |
 | `python3 -m conformance.links` | なし | 0はすべてのアドレスが応答、1は消えたアドレスがある |
+| `python3 -m conformance.quotes` | なし | 0はすべての引用が示したページにある、または文書がこのマシンにない、1は引用が見つからないか記録に引用がない |
 
 インストールしたコピーには`snesobc1-doctor`も入っており、同じ確認を実行します。
 

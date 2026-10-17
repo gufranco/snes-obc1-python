@@ -8,7 +8,7 @@ English | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | [繁�
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **596** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **612** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
@@ -164,6 +164,7 @@ Every tool runs from the repository root.
 | `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT` | 0 registers reached, 1 none reached, 2 fewer than two arguments, no directory, or no cartridge with the part |
 | `python3 -m conformance.package` | `WHEEL` | 0 every module shipped and no test, 1 a fault or no file, 2 no argument |
 | `python3 -m conformance.links` | None | 0 every address answers, 1 one is gone |
+| `python3 -m conformance.quotes` | None | 0 every quote is on the page it cites, or the document is not on this machine, 1 a quote is not there or the record quotes nothing |
 
 An installed copy also provides `snesobc1-doctor`, which runs the same checks.
 

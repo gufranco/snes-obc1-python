@@ -23,19 +23,28 @@
       "bytes": 21022582,
       "file": "book1_text.pdf",
       "through": "snes-graphics-python",
-      "note": "Not read here. The packed offset this record carries follows from the object attribute table's structure, which snes-graphics-python read out of this manual and pinned. The pin is repeated rather than referred to so a reader holding a different scan can tell before they start, and the sibling is named so nobody mistakes a digest somebody else read for a reading done here."
+      "note": "Read here for one table. The packed offset this record carries follows from the object attribute table's structure, read off page A-3 of this copy. snes-graphics-python pinned the same file first. The pin is repeated rather than referred to so a reader holding a different scan can tell before they start."
     }
   },
-  "documentsNote": "One entry, and it is a source reached through a sibling rather than one read here. No manufacturer document for this chip is known to exist: everything else in this record comes from the reference implementation and from the one cartridge that carries the part, which are rungs below the top of the ladder and are labelled as such.",
+  "documentsNote": "One entry, read here for the one table the packed offset rests on. No manufacturer document for this chip is known to exist: everything else in this record comes from the reference implementation and from the one cartridge that carries the part, which are rungs below the top of the ladder and are labelled as such.",
   "facts": {
     "packedOffset": {
       "value": 512,
       "hex": "0x200",
       "verified": true,
       "why": "The offset from a base address to the packed two-bit attributes. It is exactly the size of the OAM low table, which Nintendo documents as 128 sprites of four bytes each. The chip lays its memory out the way OAM is laid out, so this figure comes from a document rather than from a reimplementation.",
-      "source": "snes-graphics-python/conformance/hardware.json, and Nintendo's OAM structure behind it",
+      "source": "The OBJECT DATA table on page A-3 of Nintendo's SNES Development Manual, Book 1",
       "derivation": "128 sprites x 4 bytes = 512",
-      "document": "developmentManual"
+      "document": "developmentManual",
+      "section": "OBJECT DATA, OAM ADDRESS (Decimal)",
+      "filePage": 198,
+      "printedPage": "A-3",
+      "assembled": true,
+      "quote": "OBJECT DATA. OAM ADDRESS (Decimal), D15 to D0. 000 and 001: OBJ 0. 002 and 003: OBJ 1. 252 and 253: OBJ 126. 254 and 255: OBJ 127. 256: OBJ 7 - OBJ 0. 257: OBJ 15 - OBJ 8. 270: OBJ 119 - OBJ 112. 271: OBJ 127 - OBJ 120.",
+      "howItWasRead": "The table is a figure. The scan's text layer carries its heading and scatters its cells, so the rows were read off the rendered page. Each OAM address is one word, D15 to D0, so OBJ 0 to OBJ 127 take words 0 to 255, four bytes each, and the table of two bits per sprite starts at word 256, which is byte 512.",
+      "heldBy": [
+        "conformance/hardware.test.py::PackedOffsetTest.test_the_packed_bits_land_the_printed_offset_past_the_sprite_bytes"
+      ]
     },
     "windowStart": {
       "value": 24576,

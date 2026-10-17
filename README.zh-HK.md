@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**596** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
+**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**612** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
 
 ```python
 from snesobc1 import Chip
@@ -164,6 +164,7 @@ print(hex(chip.read(0x6000)))
 | `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT` | 0 觸及了暫存器，1 未觸及任何暫存器，2 參數少於兩個、目錄不存在，或沒有帶這個零件的卡帶 |
 | `python3 -m conformance.package` | `WHEEL` | 0 所有模組都已包含且不含測試，1 有錯誤或檔案不存在，2 沒有參數 |
 | `python3 -m conformance.links` | 無 | 0 所有網址都有回應，1 有網址已失效 |
+| `python3 -m conformance.quotes` | 無 | 0 每條引文都在其引用的頁面上，或文件不在本機，1 有引文不在該頁或記錄中沒有引文 |
 
 安裝後的副本還提供 `snesobc1-doctor`，執行相同的檢查。
 
