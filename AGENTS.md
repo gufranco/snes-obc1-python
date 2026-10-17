@@ -98,14 +98,15 @@ caller's business.
 ```bash
 ruff format --check .
 ruff check .
-mypy
+uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
 pnpm run format:check
 uvx yamllint==1.38.0 --strict .
-python3 -m coverage erase
+cov=(uvx --python 3.12 --from coverage==7.6.10 --with setuptools==84.0.0 coverage)
+"${cov[@]}" erase
 for file in $(find snesobc1 conformance -name '*.test.py' | sort); do
-  python3 -m coverage run -a "$file"
+  "${cov[@]}" run -a "$file"
 done
-python3 -m coverage report
+"${cov[@]}" report
 ```
 
 Then the throughput floor, which runs outside the coverage step because a tracer

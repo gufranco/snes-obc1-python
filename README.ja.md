@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**612**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
+**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**628**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
 
 ```python
 from snesobc1 import Chip
@@ -296,12 +296,13 @@ snes9xは2つ目の実装であり、チップの測定ではありません。s
 ```bash
 uvx ruff@0.16.3 format --check .
 uvx ruff@0.16.3 check .
-uvx --python 3.12 mypy==1.14.1
-python3 -m coverage erase
+uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
+cov=(uvx --python 3.12 --from coverage==7.6.10 --with setuptools==84.0.0 coverage)
+"${cov[@]}" erase
 for file in $(find snesobc1 conformance -name '*.test.py' | sort); do
-  python3 -m coverage run -a "$file"
+  "${cov[@]}" run -a "$file"
 done
-python3 -m coverage report
+"${cov[@]}" report
 ```
 
 各モジュールの隣には、そのモジュール名にちなんだテストファイルがあります。カバレッジはステートメントとブランチで100%という必須のゲートです。`conformance/`以下はすべてモジュールとして実行します。スクリプト自身のディレクトリはインポートパスの先頭に入るため、そこにあるファイルが同名の標準ライブラリモジュールを隠してしまうからです。

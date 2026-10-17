@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** 个地址，**256** 个状态，全部访问过，**3,126** 步与参考实现对比，**0** 处分歧，**612** 个测试，**100%** 语句和分支覆盖率，无依赖
+**7** 个地址，**256** 个状态，全部访问过，**3,126** 步与参考实现对比，**0** 处分歧，**628** 个测试，**100%** 语句和分支覆盖率，无依赖
 
 ```python
 from snesobc1 import Chip
@@ -296,12 +296,13 @@ snes9x 是第二个实现，而不是对芯片的测量。与它一致只说明�
 ```bash
 uvx ruff@0.16.3 format --check .
 uvx ruff@0.16.3 check .
-uvx --python 3.12 mypy==1.14.1
-python3 -m coverage erase
+uvx --python 3.12 --with setuptools==84.0.0 mypy==1.14.1
+cov=(uvx --python 3.12 --from coverage==7.6.10 --with setuptools==84.0.0 coverage)
+"${cov[@]}" erase
 for file in $(find snesobc1 conformance -name '*.test.py' | sort); do
-  python3 -m coverage run -a "$file"
+  "${cov[@]}" run -a "$file"
 done
-python3 -m coverage report
+"${cov[@]}" report
 ```
 
 每个模块旁边都有一个以它命名的测试文件。覆盖率是硬性门禁检查，要求语句和分支均达到 100%。`conformance/` 下的所有内容都以模块方式运行，因为脚本自身所在的目录会排在导入路径的最前面，那里的同名文件会遮蔽标准库中的同名模块。

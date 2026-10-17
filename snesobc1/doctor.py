@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, override
 
 
-def _version(where: Path | None = None) -> str:
+def installed_version(where: Path | None = None) -> str:
     found = re.search(
         r"""VERSION\s*[:=][^"']*["']([^"']+)["']""",
         (where or Path(__file__).resolve().parent / "version.py").read_text(),
@@ -19,7 +19,7 @@ def _version(where: Path | None = None) -> str:
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def _reachable(root: Path = ROOT, path: list[str] | None = None) -> bool:
+def reachable(root: Path = ROOT, path: list[str] | None = None) -> bool:
     where = sys.path if path is None else path
     if str(root) in where:
         return False
@@ -27,11 +27,11 @@ def _reachable(root: Path = ROOT, path: list[str] | None = None) -> bool:
     return True
 
 
-_reachable()
+reachable()
 
 from snesobc1 import environment  # noqa: E402
 
-VERSION = _version()
+VERSION = installed_version()
 
 from snesobc1 import chip  # noqa: E402
 from snesobc1.errors import OutOfRange  # noqa: E402
@@ -69,7 +69,7 @@ class Finding:
         return f"<Finding {self.name} {'ok' if self.ok else 'not ok'}>"
 
 
-def _python() -> "Finding":
+def check_python() -> "Finding":
     return Finding(
         "python",
         sys.version_info[:2] >= OLDEST_PYTHON,
@@ -78,11 +78,11 @@ def _python() -> "Finding":
     )
 
 
-def _package() -> "Finding":
+def check_package() -> "Finding":
     return Finding("snesobc1", True, f"version {VERSION}")
 
 
-def _chip(build: Callable[[], Any]) -> "Finding":
+def check_chip(build: Callable[[], Any]) -> "Finding":
     try:
         one = build()
         one.reset()
@@ -102,7 +102,7 @@ def _chip(build: Callable[[], Any]) -> "Finding":
     )
 
 
-def _window(build: Callable[[], Any]) -> "Finding":
+def check_window(build: Callable[[], Any]) -> "Finding":
     try:
         one = build()
         one.write(chip.POINTER_REGISTER, POINTED_AT)
@@ -125,7 +125,7 @@ def _window(build: Callable[[], Any]) -> "Finding":
     )
 
 
-def _outside(build: Callable[[], Any]) -> "Finding":
+def check_outside(build: Callable[[], Any]) -> "Finding":
     try:
         build().read(chip.WINDOW_END)
     except OutOfRange:
@@ -145,7 +145,7 @@ def _outside(build: Callable[[], Any]) -> "Finding":
     )
 
 
-def _reference(where: Path | str) -> "Finding":
+def check_reference(where: Path | str) -> "Finding":
     try:
         raw = Path(where).read_bytes()
     except OSError as trouble:
@@ -181,7 +181,7 @@ def _reference(where: Path | str) -> "Finding":
     )
 
 
-def _driver(where: Path | str) -> "Finding":
+def check_driver(where: Path | str) -> "Finding":
     found = Path(where).exists()
     return Finding(
         "reference driver",
@@ -202,13 +202,13 @@ def examine(
     driver: Path | str = DRIVER,
 ) -> list["Finding"]:
     return [
-        _python(),
-        _package(),
-        _chip(build),
-        _window(build),
-        _outside(build),
-        _reference(pin),
-        _driver(driver),
+        check_python(),
+        check_package(),
+        check_chip(build),
+        check_window(build),
+        check_outside(build),
+        check_reference(pin),
+        check_driver(driver),
     ]
 
 
