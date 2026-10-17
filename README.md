@@ -8,7 +8,7 @@ English &nbsp;|&nbsp; [日本語](README.ja.md) &nbsp;|&nbsp; [简体中文](REA
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **578** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **580** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
