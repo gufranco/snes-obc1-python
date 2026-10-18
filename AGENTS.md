@@ -151,6 +151,39 @@ module of the same name.
 | Fidelity | Where the chip and convenience disagree, the chip wins |
 | Public API | This and the rest of the family present the same shape where the hardware allows. See [FAMILY.md](FAMILY.md) |
 
+The linter's ignores in [`pyproject.toml`](pyproject.toml) carry no comments, so
+their reasons live here:
+
+- `N818`: three exceptions are control flow signals rather than failures, and
+  CPython names its own that way, such as `StopIteration`. The ones that report
+  a failure do end in `Error`.
+- `N999` in tests: a test file is named after the module it sits beside, so its
+  name carries a dot. A module and its tests are read together.
+- `T201` in the conformance tools: these are command line tools and printing is
+  their output. A logger would put a level and a timestamp in front of a report
+  meant for a person.
+- `BLE001` and `T201` in `environment.py`: it reports what a machine is, so a
+  check that throws has to become a line in the report rather than end the run.
+- `BLE001` and `T201` in the doctor: it has to survive whatever a check throws
+  and report it. A narrower catch would let an unforeseen failure escape as a
+  traceback and take the rest of the report with it.
+- The optional error classes in mypy: in a model of hardware the errors that
+  matter are a width, a mask or a `None` crossing a boundary, and those classes
+  catch exactly that.
+- The `snesdriver.*` and `mapper.*` override in mypy: the submodules are checked
+  in their own repositories, against their own gates. Following imports into
+  them would report findings nobody here can act on.
+- `if __name__ == "__main__":` in the coverage exclusions: the guard hands argv
+  to a function that is itself tested, and importing the module to cover it
+  would run the tool rather than test it.
+- `if TYPE_CHECKING:` in the coverage exclusions: the block never runs. Python
+  3.14 drops it before coverage sees it and earlier versions do not, so
+  counting it would make the gate mean one thing on the newest runtime and
+  another on the oldest.
+- The two ellipsis patterns in the coverage exclusions: a protocol method has no
+  body to run, whether the ellipsis sits on its own line or after the
+  signature. The same version split applies.
+
 ## Layout
 
 ```
