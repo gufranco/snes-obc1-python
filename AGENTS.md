@@ -183,6 +183,12 @@ their reasons live here:
 - The two ellipsis patterns in the coverage exclusions: a protocol method has no
   body to run, whether the ellipsis sits on its own line or after the
   signature. The same version split applies.
+- `@unittest\.skipUnless\(CLOCKED,` in the coverage exclusions: this member is
+  not a clocked part, so the family tests that drive a clock are skipped here
+  and their bodies never run.
+- `@unittest\.skipUnless\(SOLD_AS_A_COMPONENT,`, `^def machine_mentions\(` and
+  `^def listing\(` in the coverage exclusions: this part only existed inside one
+  machine, so the family sweep for machine names is skipped here.
 
 ## Layout
 
