@@ -82,6 +82,26 @@ class ReadTest(unittest.TestCase):
 
         self.assertEqual(found, {})
 
+    def test_a_sixteen_bit_store_reaches_the_byte_after_its_address_too(self) -> None:
+        # Arrange
+        wide = _reaching(0x7FF0)[:-1] + bytes((0xC2, 0x20)) + _reaching(0x7FF3)
+
+        # Act
+        found = against.reached(_a_cartridge(wide))
+
+        # Assert
+        self.assertEqual(found, {0x7FF0: 1, 0x7FF3: 1, 0x7FF4: 1})
+
+    def test_an_eight_bit_store_reaches_only_its_own_byte(self) -> None:
+        # Arrange
+        narrow = _reaching(0x7FF0)[:-1] + bytes((0xE2, 0x20)) + _reaching(0x7FF3)
+
+        # Act
+        found = against.reached(_a_cartridge(narrow))
+
+        # Assert
+        self.assertEqual(found, {0x7FF0: 1, 0x7FF3: 1})
+
     def test_how_often_each_address_was_reached_is_counted(self) -> None:
         found = against.reached(_a_cartridge(_reaching(0x7FF0) + _reaching(0x7FF0)))
 

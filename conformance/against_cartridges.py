@@ -75,6 +75,10 @@ def carries_the_part(image: bytes) -> bool:
     return image[HEADER_AT + 22] == CHIPSET and 0x20 <= image[HEADER_AT + 21] <= 0x3F
 
 
+def touched(address: int, width: int) -> list[int]:
+    return [at for at in range(address, address + width) if at >= chip.FIRST_REGISTER]
+
+
 def reached(image: bytes) -> dict[int, int]:
     here = Path(__file__).resolve().parent.parent / "snes-driver-python"
     for where in (here, here / "mos65xx-python", here / "snes-mapper-python"):
@@ -93,8 +97,7 @@ def reached(image: bytes) -> dict[int, int]:
         talk = conversation.at(image, site, window)
         seen.update(talk.covered)
         for step in talk.steps:
-            if step.address is not None and step.address >= chip.FIRST_REGISTER:
-                counted[step.address] += 1
+            counted.update(touched(step.address, step.width))
     return dict(counted)
 
 
