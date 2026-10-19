@@ -1,0 +1,4 @@
+{
+  "cartridges": [],
+  "none": "The OBC1 exists in one cartridge, Metal Combat, and no test cartridge drives it. On 2026-10-19 none of the 56 files under snes-roms/5 Tools & Service Test Carts/ declares cartridge type 25H, the OBC1's, in a header at 7FD6H or FFD6H, and the catalogue of 114 tests read out of the SNES test cartridges names no test of this part. The family's whole-console test cartridges test the work RAM, the S-PPU, the CPU's own registers and the audio unit, none of which this member models."
+}

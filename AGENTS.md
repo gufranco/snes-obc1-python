@@ -93,6 +93,16 @@ correct until four sprites are on screen at once. The read hands back the whole
 byte, because that is what the address answers; extracting a corner is the
 caller's business.
 
+## Test cartridges
+
+[`conformance/testroms.json`](conformance/testroms.json) lists none, and says
+why under `none`. The OBC1 exists in one cartridge, and no test cartridge drives
+it. On 2026-10-19 none of the 56 files under `snes-roms/5 Tools & Service Test
+Carts/` declared the OBC1's cartridge type, 25H, in either header position, and
+the catalogue of tests read out of the SNES test cartridges names none for this
+part. There is no runner and no command. The one cartridge that does drive the
+part is read by [`conformance/against_cartridges.py`](conformance/against_cartridges.py).
+
 ## Every gate, in the order to run them
 
 ```bash
