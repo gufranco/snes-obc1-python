@@ -87,7 +87,7 @@
       },
       "verified": false,
       "why": "The seven addresses that do not behave like memory.",
-      "evidence": "Two readings that do not share a source. The reference implementation, and the driver routine in both releases of the one cartridge, walked without running it: six of the seven addresses are ones that code reaches, and the two releases agree. The seventh, 0x7FF4, is not reached by an instruction carrying its whole address, which is all a walk can see.",
+      "evidence": "Three readings. The reference implementation. The driver routine in both releases of the one cartridge, walked without running it: six of the seven addresses are ones that code reaches, and the two releases agree. And a headless MAME 0.289 run of both releases for 3,600 frames with a write watch on 0x7FF0 to 0x7FF7, which saw 0x7FF4 written as the high byte of a 16-bit store to 0x7FF3 from six instructions in bank 0x82. The cartridge bytes at those instructions, 09 00 02 or 29 FF FD followed by a store to 0x7FF3, only decode with a 16-bit accumulator, so the seventh address is reached by the cartridge rather than by the emulator. The walk missed it because it takes a store of unknown width as one byte.",
       "howToSettleIt": "A die photograph, or a disassembly of that driver read independently."
     },
     "unwrittenByte": {

@@ -277,7 +277,7 @@ python3 -m conformance.exhaustive
 
 snes9xは2つ目の実装であり、チップの測定ではありません。snes9xとの一致が示すのは、2つの実装が一致することです。
 
-カートリッジ自身のコードは、レジスタアドレスの2つ目の情報源です。[`conformance/against_cartridges.py`](conformance/against_cartridges.py)は、その1本のカートリッジの両方のリリースにあるドライバルーチンを、実行せずにたどります。2つを合わせると、7つのレジスタのうち6つ、`$7FF0`から`$7FF3`、`$7FF5`、`$7FF6`に到達します。[`conformance/cartridges.json`](conformance/cartridges.json)は、両カートリッジのダイジェストとともにその読み取り結果を保持し、カートリッジのバイトは一切含みません。ウォークが見るのはアドレス全体を持つ命令だけなので、`$7FF4`に到達しないことは、それが存在しないことを示しません。
+カートリッジ自身のコードは、レジスタアドレスの2つ目の情報源です。[`conformance/against_cartridges.py`](conformance/against_cartridges.py)は、その1本のカートリッジの両方のリリースにあるドライバルーチンを、実行せずにたどります。2つを合わせると、7つのレジスタのうち6つ、`$7FF0`から`$7FF3`、`$7FF5`、`$7FF6`に到達します。[`conformance/cartridges.json`](conformance/cartridges.json)は、両カートリッジのダイジェストとともにその読み取り結果を保持し、カートリッジのバイトは一切含みません。ウォークは幅のわからないストアを1バイト幅として扱いますが、7つ目に届く`$7FF3`へのストアは2バイト幅なので、7つ目を見落とします。各リリースをMAME 0.289でヘッドレスに3,600フレーム実行すると、それらのストアの上位バイトとして`$7FF4`への書き込みが見られました。各ストアの直前にあるカートリッジのバイト、2バイトの即値を持つ`ora #$0200`または`and #$FDFF`は、エミュレータなしでその幅を裏付けます。7つのレジスタすべてに到達します。
 
 [`conformance/hardware.json`](conformance/hardware.json)は、このモデルが主張する各値とその出典を保持します。文書に由来するのはパックされたオフセット`0x200`だけで、出典は4バイトのスプライト128個からなるNintendoのOAMレイアウトです。それ以外の値はすべてリファレンスに由来します。この部品に言及するメーカー文書はありません。[`conformance/divergences.json`](conformance/divergences.json)は情報源が弱い箇所を記録し、[OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)は3つの未解決の問題を、それぞれを決着させる方法とともに列挙しています。
 

@@ -59,12 +59,22 @@ both cartridges and none of their bytes, and
 [`conformance/against_cartridges.py`](conformance/against_cartridges.py)
 reproduces it from copies you own.
 
-Two limits, so the reading is not read for more than it says. It confirms where
-the registers are and says nothing about what any of them does, which still rests
-on the reference. And a walk sees only instructions carrying their whole address,
-so `$7FF4` going unreached is absence of evidence rather than evidence of
-absence: a routine that sets the data bank once and then uses short addressing is
-invisible to it.
+**The seventh is reached too, as the high byte of a word.** The walk takes a store
+whose width it cannot establish as one byte wide, and each of the six stores to
+`$7FF3` below is two bytes wide. MAME 0.289 ran each release headless for 3,600
+frames, from power on with no input, with a watch on `$7FF0` to `$7FF7` in banks
+`$00` to `$3F` and `$80` to `$BF`. Both wrote `$7FF4` tens of thousands of times,
+always as the second byte of a 16-bit store to `$7FF3`, from six instructions:
+`$82:8135`, `$82:8143`, `$82:8735`, `$82:8745`, `$82:87EB` and `$82:87FB`. The
+cartridge bytes at those addresses say the same without the emulator. In both
+releases each is `8D F3 7F` or `8F F3 7F 00`, a store to `$7FF3`, directly after
+`09 00 02` or `29 FF FD`, an `ora #$0200` or `and #$FDFF` whose immediate is two
+bytes, which only a 16-bit accumulator reads.
+
+Two limits, so these readings are not read for more than they say. They confirm
+where the registers are and say nothing about what any of them does, which still
+rests on the reference. And the run is a floor: it covers the attract sequence
+with the controls untouched.
 
 The same walk reaches `$7FF7` and `$7FFF`, which this package treats as ordinary
 memory. That is not a disagreement. The part answers with eight kilobytes of

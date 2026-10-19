@@ -277,7 +277,7 @@ python3 -m conformance.exhaustive
 
 snes9x 是第二个实现，而不是对芯片的测量。与它一致只说明两个实现相符。
 
-卡带自身的代码是寄存器地址的第二个来源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不运行的情况下遍历这一款卡带两个发行版本中的驱动例程。两者合计访问到七个寄存器中的六个：`$7FF0` 到 `$7FF3`、`$7FF5` 和 `$7FF6`。[`conformance/cartridges.json`](conformance/cartridges.json) 保存了这一解读结果以及两个卡带的摘要，但不包含它们的任何字节。遍历只能看到携带完整地址的指令，因此 `$7FF4` 未被访问到并不说明它不存在。
+卡带自身的代码是寄存器地址的第二个来源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不运行的情况下遍历这一款卡带两个发行版本中的驱动例程。两者合计访问到七个寄存器中的六个：`$7FF0` 到 `$7FF3`、`$7FF5` 和 `$7FF6`。[`conformance/cartridges.json`](conformance/cartridges.json) 保存了这一解读结果以及两个卡带的摘要，但不包含它们的任何字节。遍历把宽度未知的存储当作一个字节宽，而访问到第七个的那些写往 `$7FF3` 的存储是两个字节宽，所以它漏掉了第七个。用 MAME 0.289 无头运行每个发行版本 3,600 帧，看到 `$7FF4` 作为这些存储的高字节被写入；每次存储之前的卡带字节，即带两字节立即数的 `ora #$0200` 或 `and #$FDFF`，无需模拟器即可证实这一宽度。七个寄存器全部被访问到。
 
 [`conformance/hardware.json`](conformance/hardware.json) 保存了本模型断言的每个值及其来源。只有打包偏移 `0x200` 来自文档：任天堂的 OAM 布局，即 128 个精灵、每个 4 字节。其他所有值都来自参考实现。没有任何厂商文档提到这个部件。[`conformance/divergences.json`](conformance/divergences.json) 记录了来源薄弱之处，[OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) 列出了 3 个未解决的问题，以及解决每个问题所需的条件。
 

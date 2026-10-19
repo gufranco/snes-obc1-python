@@ -277,7 +277,7 @@ python3 -m conformance.exhaustive
 
 snes9x 是第二個實現，而不是對晶片的量度。與它一致，表示兩個實現相符。
 
-卡帶本身的程式碼是暫存器位址的第二個來源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不執行的情況下，走訪這款卡帶兩個發行版本中的驅動常式。兩者合起來觸及七個暫存器中的六個：`$7FF0` 至 `$7FF3`、`$7FF5` 及 `$7FF6`。[`conformance/cartridges.json`](conformance/cartridges.json) 保存這次解讀，連同兩款卡帶的摘要值，但不含它們的任何位元組。走訪只看到帶有完整位址的指令，所以 `$7FF4` 未被觸及，並不表示它不存在。
+卡帶本身的程式碼是暫存器位址的第二個來源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不執行的情況下，走訪這款卡帶兩個發行版本中的驅動常式。兩者合起來觸及七個暫存器中的六個：`$7FF0` 至 `$7FF3`、`$7FF5` 及 `$7FF6`。[`conformance/cartridges.json`](conformance/cartridges.json) 保存這次解讀，連同兩款卡帶的摘要值，但不含它們的任何位元組。走訪把寬度未知的儲存當作一個位元組寬，而觸及第七個的那些寫往 `$7FF3` 的儲存是兩個位元組寬，所以它漏掉了第七個。以 MAME 0.289 無頭執行每個發行版本 3,600 幀，看到 `$7FF4` 作為這些儲存的高位元組被寫入；每次儲存之前的卡帶位元組，即帶兩位元組立即值的 `ora #$0200` 或 `and #$FDFF`，無需模擬器便證實了這個寬度。七個暫存器全部被觸及。
 
 [`conformance/hardware.json`](conformance/hardware.json) 保存這個模型斷言的每個值及其來源。只有打包偏移 `0x200` 來自文件：Nintendo 的 OAM 佈局，128 個精靈，每個 4 位元組。其他每個值都來自參考實現。沒有任何製造商文件提及這個零件。[`conformance/divergences.json`](conformance/divergences.json) 記錄來源薄弱之處，[OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) 列出 3 個未解決的問題，以及能解決每個問題的依據。
 
