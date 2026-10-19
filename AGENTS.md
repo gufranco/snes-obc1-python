@@ -72,7 +72,7 @@ states confirm both sides ignore whatever memory held.
 reference, which is why it is the only figure here that survives the reference
 being wrong.
 
-**Not settled: 3 things**, each in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) with
+**Not settled: 4 things**, each in [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) with
 what would close it. Two of them are the same shape: one cartridge and one
 reimplementation cannot constrain what the chip does in a state that cartridge
 never reaches. Do not close one by argument.

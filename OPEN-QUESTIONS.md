@@ -71,6 +71,10 @@ releases each is `8D F3 7F` or `8F F3 7F 00`, a store to `$7FF3`, directly after
 `09 00 02` or `29 FF FD`, an `ora #$0200` or `and #$FDFF` whose immediate is two
 bytes, which only a 16-bit accumulator reads.
 
+Since 2026-10-19 the recorded reading reaches `$7FF4` as well, and says how: the
+walk takes the width of each of those stores from the MAME trace
+snes-driver-python records, labelled traced, and through no other label.
+
 Two limits, so these readings are not read for more than they say. They confirm
 where the registers are and say nothing about what any of them does, which still
 rests on the reference. And the run is a floor: it covers the attract sequence
@@ -98,6 +102,34 @@ repository or in the reference would notice.
 
 **What would settle or reopen it.** A second cartridge carrying this chip, which
 does not exist, or a die photograph.
+
+### Which reached addresses rest on an assumed width.
+
+**The document says.** Nothing. The width of an access to the part is set by
+whoever called the routine making it, and nothing in the routine says what that
+was.
+
+**What this project follows.** Neither, and every access says which. The walk
+labels each width known where the code sets it, executed where a run of the
+image used it, traced where a headless MAME run that snes-driver-python records
+saw the bus move it at that instruction, and assumed where none of those says.
+An assumed access is replayed as one byte, which can miss the second byte of a
+word; that is how `$7FF4` went unreached until a trace supplied the width.
+Nothing is dropped for lacking a width.
+
+**Measured on 2026-10-19,** against snes-driver-python at `adc1b8c`. The two
+releases make 708 accesses: 21 known, 0 executed, 34 traced and 653 assumed.
+The walks from 292 sites in the European release and 291 in the American one
+rest on at least one assumed width, and
+[`conformance/cartridges.json`](conformance/cartridges.json) names each under
+`assumedAt`. Every register is reached by an access that is not assumed:
+`$7FF5` through a known width and the other six through traced ones. `$7FF7` is
+reached under three labels, and `$7FFD` and `$7FFF`, which this package treats
+as memory, only through assumed widths.
+
+**What would settle or reopen it.** For each site under `assumedAt`, a trace
+reaching that code, or a decode the walker can follow: a sweep from the vectors
+that arrives at the routine with its width.
 
 ## Where the question is a scope boundary, not an unknown
 

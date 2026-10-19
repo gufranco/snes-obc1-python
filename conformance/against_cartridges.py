@@ -24,6 +24,14 @@ CHIPSET = 0x25
 
 SUFFIXES = (".sfc", ".smc")
 
+DRIVER = Path(__file__).resolve().parent.parent / "snes-driver-python"
+
+TRACED_CORPUS = DRIVER / "conformance" / "traced.json"
+
+ASSUMED_WIDTH = 1
+
+LAYOUT = "lorom"
+
 
 def declared() -> tuple[int, ...]:
     return (
@@ -79,26 +87,97 @@ def touched(address: int, width: int) -> list[int]:
     return [at for at in range(address, address + width) if at >= chip.FIRST_REGISTER]
 
 
-def reached(image: bytes) -> dict[int, int]:
-    here = Path(__file__).resolve().parent.parent / "snes-driver-python"
-    for where in (here, here / "mos65xx-python", here / "snes-mapper-python"):
+def driver() -> Any:
+    for where in (DRIVER, DRIVER / "mos65xx-python", DRIVER / "snes-mapper-python"):
         if str(where) not in sys.path:
             sys.path.insert(0, str(where))
-    from snesdriver import conversation, window_for
+    import snesdriver
 
-    window = window_for("obc1", "lorom")
-    assert window is not None, "the driver knows no window for this part"
+    return snesdriver
 
-    counted: collections.Counter[int] = collections.Counter()
+
+def marks() -> dict[str, str]:
+    conversation = driver().conversation
+    return {
+        "known": "",
+        "executed": conversation.RAN,
+        "traced": conversation.TRACED,
+        "assumed": conversation.UNKNOWN,
+    }
+
+
+MARKS = marks()
+
+
+def label_of(step: Any) -> str:
+    if step.width is None:
+        return "assumed"
+    if step.traced:
+        return "traced"
+    return "executed" if step.ran else "known"
+
+
+def traced_widths(digest: str, path: Path = TRACED_CORPUS) -> dict[int, int]:
+    held = json.loads(path.read_text())["cartridges"].get(digest)
+    if held is None:
+        return {}
+    return {
+        int(site["offset"], 16): int(site["widths"][0])
+        for site in held["sites"]
+        if len(site["widths"]) == 1 and not site["disputed"]
+    }
+
+
+class Reading:
+    __slots__ = ("assumed", "by_address", "counted", "labels")
+
+    def __init__(self) -> None:
+        self.counted: dict[int, int] = {}
+        self.labels = dict.fromkeys(MARKS, 0)
+        self.assumed: list[int] = []
+        self.by_address: dict[int, set[str]] = {}
+
+
+def walks(image: bytes, window: Any, traced: dict[int, int]) -> list[tuple[int, Any]]:
+    snesdriver = driver()
+    known = snesdriver.widths(image, LAYOUT)
+    conversation = snesdriver.conversation
+    found = []
     seen: set[int] = set()
     for site in conversation.sites(image, window):
         if site in seen:
             continue
-        talk = conversation.at(image, site, window)
-        seen.update(talk.covered)
+        for (wide, index), told in conversation.starts(site, None, known, {}):
+            talk = conversation.at(
+                image, site, window, wide, index=index, known=known, ran=told, traced=traced
+            )
+            seen.update(talk.covered)
+            found.append((site, talk))
+    return found
+
+
+def read(image: bytes, traced: dict[int, int] | None = None) -> Reading:
+    window = driver().window_for("obc1", LAYOUT)
+    assert window is not None, "the driver knows no window for this part"
+    reading = Reading()
+    counted: collections.Counter[int] = collections.Counter()
+    assumed: set[int] = set()
+    for site, talk in walks(image, window, traced or {}):
         for step in talk.steps:
-            counted.update(touched(step.address, step.width))
-    return dict(counted)
+            label = label_of(step)
+            reading.labels[label] += 1
+            reaches = touched(step.address, step.width or ASSUMED_WIDTH)
+            counted.update(reaches)
+            for at in reaches:
+                reading.by_address.setdefault(at, set()).add(label)
+            assumed |= {site} if label == "assumed" else set()
+    reading.counted = dict(counted)
+    reading.assumed = sorted(assumed)
+    return reading
+
+
+def reached(image: bytes) -> dict[int, int]:
+    return read(image).counted
 
 
 def compare(found: dict[int, int]) -> dict[str, Any]:
@@ -135,6 +214,8 @@ def main(
     catalogue = published() if named is None else named
     rows = []
     together: collections.Counter[int] = collections.Counter()
+    labels: collections.Counter[str] = collections.Counter(dict.fromkeys(MARKS, 0))
+    by_address: dict[int, set[str]] = {}
     for path in sorted(source.rglob("*")):
         if path.suffix.lower() not in SUFFIXES or not path.is_file():
             continue
@@ -143,8 +224,12 @@ def main(
             continue
         if not carries_the_part(image):
             continue
-        found = reached(image)
+        reading = read(image, traced_widths(digests_of(image)["sha256"]))
+        found = reading.counted
         together.update(found)
+        labels.update(reading.labels)
+        for at, held in reading.by_address.items():
+            by_address.setdefault(at, set()).update(held)
         rows.append(
             {
                 "name": path.name,
@@ -155,7 +240,9 @@ def main(
                 "layout": "lorom",
                 "chipset": f"{CHIPSET:#04x}",
                 **digests_of(image),
-                **{"confirmed": " ".join(compare(found)["confirmed"])},
+                "confirmed": " ".join(compare(found)["confirmed"]),
+                "accesses": reading.labels,
+                "assumedAt": [f"{at:#08x}" for at in reading.assumed],
             }
         )
 
@@ -168,11 +255,18 @@ def main(
             "Which addresses inside the part's window the cartridges' own driver "
             "routines reach, read out of their code without running any of it. This "
             "is the cartridge saying where the registers are rather than an emulator "
-            "saying it. No cartridge byte is recorded here."
+            "saying it. Every access carries one label: known where the code sets its "
+            "width, executed where a run of the image used it, traced where a headless "
+            "MAME run saw the bus move it at that instruction, and assumed where none "
+            "of those says, in which case it is replayed as one byte. assumedAt names "
+            "the sites whose walk rests on an assumed width. No cartridge byte is "
+            "recorded here."
         ),
         "producedBy": "https://github.com/gufranco/snes-driver-python",
         "readFrom": sorted(rows, key=lambda row: str(row["name"])),
         "reached": {f"{at:#06x}": count for at, count in sorted(together.items())},
+        "accesses": dict(labels),
+        "labelsByAddress": {f"{at:#06x}": sorted(held) for at, held in sorted(by_address.items())},
         **compare(dict(together)),
     }
     (out / RECORDED).write_text(json.dumps(written, indent=2) + "\n")

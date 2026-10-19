@@ -108,6 +108,121 @@ class ReadTest(unittest.TestCase):
         self.assertEqual(found[0x7FF0], 2)
 
 
+def _labels(known: int = 0, executed: int = 0, traced: int = 0, assumed: int = 0) -> dict[str, int]:
+    return {"known": known, "executed": executed, "traced": traced, "assumed": assumed}
+
+
+class WidthLabelTest(unittest.TestCase):
+    def test_an_access_whose_width_the_code_does_not_set_is_one_byte_and_assumed(self) -> None:
+        # Arrange
+        image = _a_cartridge(_reaching(0x7FF3))
+
+        # Act
+        found = against.read(image)
+
+        # Assert
+        self.assertEqual(
+            (found.counted, dict(found.labels), found.assumed),
+            ({0x7FF3: 1}, _labels(assumed=1), [0x200]),
+        )
+
+    def test_an_access_after_the_code_sets_its_width_is_known(self) -> None:
+        # Arrange
+        image = _a_cartridge(_reaching(0x7FF0)[:-1] + bytes((0xE2, 0x20)) + _reaching(0x7FF3))
+
+        # Act
+        found = against.read(image)
+
+        # Assert
+        self.assertEqual(
+            (dict(found.labels), found.assumed), (_labels(known=1, assumed=1), [0x200])
+        )
+
+    def test_a_width_a_trace_saw_settles_the_assumption(self) -> None:
+        # Arrange
+        image = _a_cartridge(_reaching(0x7FF3))
+
+        # Act
+        found = against.read(image, traced={0x200: 2})
+
+        # Assert
+        self.assertEqual(
+            (found.counted, dict(found.labels), found.assumed),
+            ({0x7FF3: 1, 0x7FF4: 1}, _labels(traced=1), []),
+        )
+
+    def test_a_width_a_run_used_is_labelled_executed(self) -> None:
+        # Arrange
+        step = against.driver().conversation.Step("write", 2, 0x7FF3, 0x00, ran=True)
+
+        # Act
+        found = against.label_of(step)
+
+        # Assert
+        self.assertEqual(found, "executed")
+
+    def test_the_labels_are_the_four_the_driver_marks(self) -> None:
+        # Arrange
+        driver = against.driver().conversation
+
+        # Act
+        found = against.MARKS
+
+        # Assert
+        self.assertEqual(
+            found,
+            {
+                "known": "",
+                "executed": driver.RAN,
+                "traced": driver.TRACED,
+                "assumed": driver.UNKNOWN,
+            },
+        )
+
+
+class ByAddressTest(unittest.TestCase):
+    def test_each_address_names_the_labels_of_the_accesses_that_reached_it(self) -> None:
+        # Arrange
+        image = _a_cartridge(_reaching(0x7FF0)[:-1] + bytes((0xC2, 0x20)) + _reaching(0x7FF3))
+
+        # Act
+        found = against.read(image, traced={0x200: 1})
+
+        # Assert
+        self.assertEqual(
+            found.by_address,
+            {0x7FF0: {"traced"}, 0x7FF3: {"known"}, 0x7FF4: {"known"}},
+        )
+
+
+class TracedCorpusTest(unittest.TestCase):
+    def test_a_site_traced_at_one_width_gives_that_width(self) -> None:
+        # Arrange
+        path = Path(tempfile.mkdtemp()) / "traced.json"
+        sites = [
+            {"offset": "0x000200", "widths": [2], "disputed": False},
+            {"offset": "0x000300", "widths": [1, 2], "disputed": False},
+            {"offset": "0x000400", "widths": [1], "disputed": True},
+        ]
+        path.write_text(json.dumps({"cartridges": {"ab" * 32: {"sites": sites}}}))
+
+        # Act
+        found = [against.traced_widths("ab" * 32, path), against.traced_widths("cd" * 32, path)]
+
+        # Assert
+        self.assertEqual(found, [{0x200: 2}, {}])
+
+    def test_the_driver_beside_this_one_carries_a_traced_corpus(self) -> None:
+        # Arrange
+        named = against.published()
+
+        # Act
+        found = {digest: against.traced_widths(digest) for digest in named}
+
+        # Assert
+        self.assertEqual(len([one for one in found.values() if one]) >= 2, True)
+
+
 class AgreementTest(unittest.TestCase):
     def test_a_cartridge_reaching_only_declared_registers_agrees(self) -> None:
         found = against.compare({0x7FF0: 4, 0x7FF6: 1})
@@ -131,15 +246,35 @@ class AgreementTest(unittest.TestCase):
 
 
 class RecordedTest(unittest.TestCase):
-    def test_the_recorded_reading_confirms_six_of_the_seven(self) -> None:
+    def test_the_recorded_reading_confirms_all_seven(self) -> None:
+        # Arrange
+        expected = 7
+
+        # Act
         found = against.recorded()
 
-        self.assertEqual(len(found["confirmed"]), 6)
+        # Assert
+        self.assertEqual(len(found["confirmed"]), expected)
 
-    def test_it_reaches_a_couple_of_addresses_the_model_treats_as_memory(self) -> None:
+    def test_the_seventh_is_reached_only_through_a_traced_width(self) -> None:
+        # Arrange
         found = against.recorded()
 
-        self.assertEqual(found["asMemory"], ["0x7ff7", "0x7fff"])
+        # Act
+        labels = found["labelsByAddress"]["0x7ff4"]
+
+        # Assert
+        self.assertEqual(labels, ["traced"])
+
+    def test_it_reaches_a_few_addresses_the_model_treats_as_memory(self) -> None:
+        # Arrange
+        expected = ["0x7ff7", "0x7ffd", "0x7fff"]
+
+        # Act
+        found = against.recorded()
+
+        # Assert
+        self.assertEqual(found["asMemory"], expected)
 
     def test_both_releases_were_read(self) -> None:
         found = against.recorded()
@@ -163,6 +298,26 @@ class RecordedTest(unittest.TestCase):
                 [key for key in ("crc32", "md5", "sha1", "sha256") if key in one],
                 ["crc32", "md5", "sha1", "sha256"],
             )
+
+    def test_every_access_it_counted_carries_one_of_the_four_labels(self) -> None:
+        # Arrange
+        found = against.recorded()
+
+        # Act
+        labels = found["accesses"]
+
+        # Assert
+        self.assertEqual(sorted(labels), ["assumed", "executed", "known", "traced"])
+
+    def test_each_cartridge_names_the_sites_that_rest_on_an_assumed_width(self) -> None:
+        # Arrange
+        found = against.recorded()
+
+        # Act
+        named = [len(one["assumedAt"]) > 0 for one in found["readFrom"]]
+
+        # Assert
+        self.assertEqual(named, [True, True])
 
     def test_a_reading_that_is_not_there_reads_as_nothing(self) -> None:
         with tempfile.TemporaryDirectory() as where:

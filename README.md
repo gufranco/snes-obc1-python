@@ -8,7 +8,7 @@ English | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | [繁�
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **643** tests, **100%** statement and branch coverage, no dependencies
+**7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **654** tests, **100%** statement and branch coverage, no dependencies
 
 ```python
 from snesobc1 import Chip
@@ -277,9 +277,9 @@ The build fetches [snes9x](https://github.com/snes9xgit/snes9x) at the commit pi
 
 snes9x is a second implementation, not a measurement of the chip. Agreement with it shows the two implementations match.
 
-The cartridge's own code is a second source for the register addresses. [`conformance/against_cartridges.py`](conformance/against_cartridges.py) walks the driver routine in both releases of the one cartridge without running it. Together they reach six of the seven registers: `$7FF0` to `$7FF3`, `$7FF5` and `$7FF6`. [`conformance/cartridges.json`](conformance/cartridges.json) holds that reading with the digests of both cartridges and none of their bytes. The walk takes a store of unknown width as one byte wide, and the stores to `$7FF3` that reach the seventh are two bytes wide, so it misses it. A headless MAME 0.289 run of each release for 3,600 frames saw `$7FF4` written as the high byte of those stores, and the cartridge bytes before each store, an `ora #$0200` or `and #$FDFF` with a two-byte immediate, confirm the width without the emulator. All seven registers are reached.
+The cartridge's own code is a second source for the register addresses. [`conformance/against_cartridges.py`](conformance/against_cartridges.py) walks the driver routine in both releases of the one cartridge without running it, and labels the width of every access: known where the code sets it, executed where a run of the image used it, traced where a headless MAME 0.289 run recorded by snes-driver-python saw the bus move it at that instruction, and assumed where none of those says. An assumed access is replayed as one byte. [`conformance/cartridges.json`](conformance/cartridges.json) holds that reading, with the digests of both cartridges and none of their bytes. Of the 708 accesses it counts, 21 are known, 34 traced and 653 assumed. Together the two releases reach all seven registers. `$7FF4` is reached only through a traced width: it is the high byte of the 16-bit stores to `$7FF3`, and the cartridge bytes before each store, an `ora #$0200` or `and #$FDFF` with a two-byte immediate, confirm that width without the emulator.
 
-[`conformance/hardware.json`](conformance/hardware.json) holds each value this model asserts and where it comes from. Only the packed offset, `0x200`, comes from a document: Nintendo's OAM layout of 128 sprites of 4 bytes. Every other value comes from the reference. No manufacturer document names this part. [`conformance/divergences.json`](conformance/divergences.json) records where the sources are weak, and [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) lists the 3 open questions with what would settle each.
+[`conformance/hardware.json`](conformance/hardware.json) holds each value this model asserts and where it comes from. Only the packed offset, `0x200`, comes from a document: Nintendo's OAM layout of 128 sprites of 4 bytes. Every other value comes from the reference. No manufacturer document names this part. [`conformance/divergences.json`](conformance/divergences.json) records where the sources are weak, and [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) lists the 4 open questions with what would settle each.
 
 `python3 -m conformance.speed` reads through the window 20,000 times, 5 times over, and fails below 500,000 reads per second.
 
