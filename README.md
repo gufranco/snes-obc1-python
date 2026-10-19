@@ -31,10 +31,10 @@ The program sets the pointer to sprite 2 and writes four bytes to `$7FF0` throug
 
 ## Install
 
-| Requirement | Version |
-|:--|:--|
-| Python | 3.12 or newer |
-| git | Any, to fetch the submodule |
+| Requirement             | Version                                              |
+| :---------------------- | :--------------------------------------------------- |
+| Python                  | 3.12 or newer                                        |
+| git                     | Any, to fetch the submodule                          |
 | A C++17 compiler, `g++` | Only to build the reference for the conformance walk |
 
 ```bash
@@ -57,42 +57,42 @@ Releases follow [Semantic Versioning](https://semver.org/) and are cut from the 
 
 `snesobc1.Chip(model, ram=None)` builds one chip. `model` is required. Without `ram` the chip runs its reset. With `ram`, a `bytearray` of 8,192 bytes, the chip copies it and derives the base and the pointer from the copy without wiping anything. The real chip has no such input; `ram` exists for tools that carry save states.
 
-| Model | Aliases | Window | Memory |
-|:--|:--|:--|:--|
+| Model  | Aliases        | Window             | Memory      |
+| :----- | :------------- | :----------------- | :---------- |
 | `obc1` | `obc-1`, `obc` | `$6000` to `$7FFF` | 8,192 bytes |
 
 A model name is matched without regard to case, hyphens, underscores or spaces, so `Chip("OBC-1")` builds the same chip.
 
 ### Calls
 
-| Call | Effect |
-|:--|:--|
-| `reset()` | Sets all 8,192 bytes to `FF`, then reads the base and the pointer back out of them. Returns the chip |
-| `adopt(ram)` | Copies `ram` into the chip and derives the base and the pointer from it. Returns the chip |
-| `read(address)` | Returns one byte. `$7FF0` to `$7FF4` read through the window; every other address reads its own byte |
+| Call                    | Effect                                                                                                                            |
+| :---------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| `reset()`               | Sets all 8,192 bytes to `FF`, then reads the base and the pointer back out of them. Returns the chip                              |
+| `adopt(ram)`            | Copies `ram` into the chip and derives the base and the pointer from it. Returns the chip                                         |
+| `read(address)`         | Returns one byte. `$7FF0` to `$7FF4` read through the window; every other address reads its own byte                              |
 | `write(address, value)` | Writes the low 8 bits of `value`. `$7FF0` to `$7FF6` also store the byte at their own offset, under the remapping. Returns `None` |
 
 ### State
 
-| Attribute | Meaning |
-|:--|:--|
-| `ram` | The 8,192 bytes as a `bytearray`. Index 0 is address `$6000` |
-| `base` | Offset of the sprite table the window sits over: `0x1800` or `0x1C00` |
-| `address` | The pointer, 0 to 127 |
-| `shift` | The bit position in the shared byte that `$7FF4` reaches: 0, 2, 4 or 6 |
-| `model` | The canonical model name |
+| Attribute | Meaning                                                                |
+| :-------- | :--------------------------------------------------------------------- |
+| `ram`     | The 8,192 bytes as a `bytearray`. Index 0 is address `$6000`           |
+| `base`    | Offset of the sprite table the window sits over: `0x1800` or `0x1C00`  |
+| `address` | The pointer, 0 to 127                                                  |
+| `shift`   | The bit position in the shared byte that `$7FF4` reaches: 0, 2, 4 or 6 |
+| `model`   | The canonical model name                                               |
 
 ### Module contents
 
-| Name | Content |
-|:--|:--|
-| `snesobc1.MODELS` | The `Model` records, keyed by canonical name |
-| `snesobc1.Model` | A record with `name`, `aliases` and `summary`. `build(ram=None)` returns a chip |
-| `snesobc1.models.lookup(name)` | Returns the `Model` a name or alias matches, under the same matching as `Chip`. Raises `UnknownModelError` otherwise |
-| `snesobc1.UnknownModelError` | Raised when no model is named, or the name matches no model. The message lists the models there are |
-| `snesobc1.OutOfRange` | Raised by `read` and `write` for an address below `$6000` or above `$7FFF` |
-| `snesobc1.__version__` | The installed version |
-| `snesobc1.chip` | The constants behind the addresses: `WINDOW_START`, `WINDOW_END`, `RAM_BYTES`, `BASE_HIGH`, `BASE_LOW`, `PACKED_OFFSET`, `FIRST_REGISTER`, `PACKED_REGISTER`, `BASE_REGISTER`, `POINTER_REGISTER`, `ADDRESS_MASK`, `PACKED_MASK`, `UNWRITTEN` |
+| Name                           | Content                                                                                                                                                                                                                                       |
+| :----------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snesobc1.MODELS`              | The `Model` records, keyed by canonical name                                                                                                                                                                                                  |
+| `snesobc1.Model`               | A record with `name`, `aliases` and `summary`. `build(ram=None)` returns a chip                                                                                                                                                               |
+| `snesobc1.models.lookup(name)` | Returns the `Model` a name or alias matches, under the same matching as `Chip`. Raises `UnknownModelError` otherwise                                                                                                                          |
+| `snesobc1.UnknownModelError`   | Raised when no model is named, or the name matches no model. The message lists the models there are                                                                                                                                           |
+| `snesobc1.OutOfRange`          | Raised by `read` and `write` for an address below `$6000` or above `$7FFF`                                                                                                                                                                    |
+| `snesobc1.__version__`         | The installed version                                                                                                                                                                                                                         |
+| `snesobc1.chip`                | The constants behind the addresses: `WINDOW_START`, `WINDOW_END`, `RAM_BYTES`, `BASE_HIGH`, `BASE_LOW`, `PACKED_OFFSET`, `FIRST_REGISTER`, `PACKED_REGISTER`, `BASE_REGISTER`, `POINTER_REGISTER`, `ADDRESS_MASK`, `PACKED_MASK`, `UNWRITTEN` |
 
 ```python
 import snesobc1
@@ -154,17 +154,17 @@ Bit 0 of `$7FF5` selects the base: 0 gives `0x1C00`, 1 gives `0x1800`. The byte 
 
 Every tool runs from the repository root.
 
-| Command | Arguments | Exit codes |
-|:--|:--|:--|
-| `python3 snesobc1/doctor.py` | None | 0 when every check passes, 1 otherwise |
-| `python3 -m conformance.build` | `--sources DIR`, `--output PATH`, `--pinned FILE`, `--driver-source FILE` | 0 built, 1 the compiler failed, 2 a bad option, a failed fetch, a missing `obc1.cpp` or missing markers |
-| `python3 -m conformance.exhaustive` | `--driver PATH` | 0 no disagreement, 1 a walk disagreed, 2 no driver, a driver that exited nonzero, or a bad option |
-| `python3 -m conformance.speed` | None | 0 at or above the floor, 1 below it |
-| `python3 -m conformance.documents` | `--check`, `--only SUBSTRING` | 0 every document verified, 1 one refused, none matched, or a bad option |
-| `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT` | 0 registers reached, 1 none reached, 2 fewer than two arguments, no directory, or no cartridge with the part |
-| `python3 -m conformance.package` | `WHEEL` | 0 every module shipped and no test, 1 a fault or no file, 2 no argument |
-| `python3 -m conformance.links` | None | 0 every address answers, 1 one is gone |
-| `python3 -m conformance.quotes` | None | 0 every quote is on the page it cites, or the document is not on this machine, 1 a quote is not there or the record quotes nothing |
+| Command                                     | Arguments                                                                 | Exit codes                                                                                                                         |
+| :------------------------------------------ | :------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `python3 snesobc1/doctor.py`                | None                                                                      | 0 when every check passes, 1 otherwise                                                                                             |
+| `python3 -m conformance.build`              | `--sources DIR`, `--output PATH`, `--pinned FILE`, `--driver-source FILE` | 0 built, 1 the compiler failed, 2 a bad option, a failed fetch, a missing `obc1.cpp` or missing markers                            |
+| `python3 -m conformance.exhaustive`         | `--driver PATH`                                                           | 0 no disagreement, 1 a walk disagreed, 2 no driver, a driver that exited nonzero, or a bad option                                  |
+| `python3 -m conformance.speed`              | None                                                                      | 0 at or above the floor, 1 below it                                                                                                |
+| `python3 -m conformance.documents`          | `--check`, `--only SUBSTRING`                                             | 0 every document verified, 1 one refused, none matched, or a bad option                                                            |
+| `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT`                                                       | 0 registers reached, 1 none reached, 2 fewer than two arguments, no directory, or no cartridge with the part                       |
+| `python3 -m conformance.package`            | `WHEEL`                                                                   | 0 every module shipped and no test, 1 a fault or no file, 2 no argument                                                            |
+| `python3 -m conformance.links`              | None                                                                      | 0 every address answers, 1 one is gone                                                                                             |
+| `python3 -m conformance.quotes`             | None                                                                      | 0 every quote is on the page it cites, or the document is not on this machine, 1 a quote is not there or the record quotes nothing |
 
 An installed copy also provides `snesobc1-doctor`, which runs the same checks.
 
@@ -172,13 +172,13 @@ An installed copy also provides `snesobc1-doctor`, which runs the same checks.
 
 The chip holds 8,192 bytes. Seven addresses at the top of its window do not read or write the byte they name.
 
-| Address | What it reaches |
-|:--|:--|
-| `$7FF0` to `$7FF3` | Four consecutive bytes at `base + pointer * 4` |
-| `$7FF4` | Two bits of the byte at `base + 0x200 + pointer // 4` |
-| `$7FF5` | Bit 0 chooses the base, `0x1800` or `0x1C00` |
-| `$7FF6` | The pointer, and the two bits `$7FF4` reaches |
-| Any other address from `$6000` to `$7FFF` | Its own byte |
+| Address                                   | What it reaches                                       |
+| :---------------------------------------- | :---------------------------------------------------- |
+| `$7FF0` to `$7FF3`                        | Four consecutive bytes at `base + pointer * 4`        |
+| `$7FF4`                                   | Two bits of the byte at `base + 0x200 + pointer // 4` |
+| `$7FF5`                                   | Bit 0 chooses the base, `0x1800` or `0x1C00`          |
+| `$7FF6`                                   | The pointer, and the two bits `$7FF4` reaches         |
+| Any other address from `$6000` to `$7FFF` | Its own byte                                          |
 
 ## The two things that are easy to get wrong
 
@@ -257,10 +257,10 @@ print(Chip("obc1", ram=saved).reset().address)
 
 The state is a base, one of 2, and a pointer, one of 128. Every one of the 256 combinations is reachable in a few writes, so the walk visits all of them.
 
-| Walk | Steps | What it compares |
-|:--|--:|:--|
+| Walk        | Steps | What it compares                                                                                           |
+| :---------- | ----: | :--------------------------------------------------------------------------------------------------------- |
 | Every state | 3,076 | Each base and pointer, with all five window addresses written and read, then all 8,192 bytes byte for byte |
-| The reset | 50 | That the reset ignores what memory held, from 10 starting states |
+| The reset   |    50 | That the reset ignores what memory held, from 10 starting states                                           |
 
 ```bash
 python3 -m conformance.build
@@ -285,13 +285,13 @@ The cartridge's own code is a second source for the register addresses. [`confor
 
 ## Working on it
 
-| Need | Where |
-|:--|:--|
-| Every gate and the order to run them | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| The same material for a coding agent | [AGENTS.md](AGENTS.md) |
-| The standard this repository shares with the rest of the family | [FAMILY.md](FAMILY.md) |
-| Bug reports | [GitHub Issues](https://github.com/gufranco/snes-obc1-python/issues) |
-| Security reports | [SECURITY.md](SECURITY.md) |
+| Need                                                            | Where                                                                |
+| :-------------------------------------------------------------- | :------------------------------------------------------------------- |
+| Every gate and the order to run them                            | [CONTRIBUTING.md](CONTRIBUTING.md)                                   |
+| The same material for a coding agent                            | [AGENTS.md](AGENTS.md)                                               |
+| The standard this repository shares with the rest of the family | [FAMILY.md](FAMILY.md)                                               |
+| Bug reports                                                     | [GitHub Issues](https://github.com/gufranco/snes-obc1-python/issues) |
+| Security reports                                                | [SECURITY.md](SECURITY.md)                                           |
 
 ```bash
 uvx ruff@0.16.3 format --check .
@@ -310,7 +310,7 @@ Each module has a test file beside it, named after it. Coverage is a hard gate a
 ## References
 
 - snes9x, `obc1.cpp` at commit `2971061cf07fdc6fc7d18883edf4e648eb16a6d2`, https://github.com/snes9xgit/snes9x. The reference the walk compares against. It is fetched at build time and never carried here.
-- *SNES Development Manual, Book I*, Nintendo of America Inc. 240 pages, 21,022,582 bytes, SHA-256 `f1405241000046abba7849376d2ec53cf85f1ad2e9950d69a7c2cf1f3ff6b791`. Its OAM structure gives the packed offset. It is not redistributable and is not in this repository. `python3 -m conformance.documents` downloads it from https://archive.org/download/SNESDevManual/book1_text.pdf into `docs/`, which git ignores, and refuses any other file. `--check` verifies a copy already there.
+- _SNES Development Manual, Book I_, Nintendo of America Inc. 240 pages, 21,022,582 bytes, SHA-256 `f1405241000046abba7849376d2ec53cf85f1ad2e9950d69a7c2cf1f3ff6b791`. Its OAM structure gives the packed offset. It is not redistributable and is not in this repository. `python3 -m conformance.documents` downloads it from https://archive.org/download/SNESDevManual/book1_text.pdf into `docs/`, which git ignores, and refuses any other file. `--check` verifies a copy already there.
 
 ## Citing this
 

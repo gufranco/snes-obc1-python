@@ -31,10 +31,10 @@ print(list(chip.ram[chip.base + 8 : chip.base + 12]))
 
 ## 安装
 
-| 要求 | 版本 |
-|:--|:--|
-| Python | 3.12 或更新 |
-| git | 任意版本，用于获取子模块 |
+| 要求               | 版本                               |
+| :----------------- | :--------------------------------- |
+| Python             | 3.12 或更新                        |
+| git                | 任意版本，用于获取子模块           |
 | C++17 编译器 `g++` | 仅在为一致性遍历构建参考实现时需要 |
 
 ```bash
@@ -57,42 +57,42 @@ python3 snesobc1/doctor.py
 
 `snesobc1.Chip(model, ram=None)` 构建一个芯片。`model` 为必填项。不传 `ram` 时，芯片执行复位。传入 `ram`（一个 8,192 字节的 `bytearray`）时，芯片复制它，并从副本推导出基址和指针，不清除任何内容。真实芯片没有这样的输入；`ram` 参数是为携带存档状态的工具提供的。
 
-| 型号 | 别名 | 窗口 | 内存 |
-|:--|:--|:--|:--|
+| 型号   | 别名           | 窗口               | 内存       |
+| :----- | :------------- | :----------------- | :--------- |
 | `obc1` | `obc-1`、`obc` | `$6000` 到 `$7FFF` | 8,192 字节 |
 
 型号名称匹配时不区分大小写，并忽略连字符、下划线和空格，因此 `Chip("OBC-1")` 构建的是同一个芯片。
 
 ### 调用
 
-| 调用 | 作用 |
-|:--|:--|
-| `reset()` | 把全部 8,192 个字节设为 `FF`，然后从中读回基址和指针。返回该芯片 |
-| `adopt(ram)` | 把 `ram` 复制进芯片，并从中推导出基址和指针。返回该芯片 |
-| `read(address)` | 返回一个字节。`$7FF0` 到 `$7FF4` 通过窗口读取；其他地址读取各自的字节 |
+| 调用                    | 作用                                                                                             |
+| :---------------------- | :----------------------------------------------------------------------------------------------- |
+| `reset()`               | 把全部 8,192 个字节设为 `FF`，然后从中读回基址和指针。返回该芯片                                 |
+| `adopt(ram)`            | 把 `ram` 复制进芯片，并从中推导出基址和指针。返回该芯片                                          |
+| `read(address)`         | 返回一个字节。`$7FF0` 到 `$7FF4` 通过窗口读取；其他地址读取各自的字节                            |
 | `write(address, value)` | 写入 `value` 的低 8 位。`$7FF0` 到 `$7FF6` 还会在重映射之下把该字节存到各自的偏移处。返回 `None` |
 
 ### 状态
 
-| 属性 | 含义 |
-|:--|:--|
-| `ram` | 以 `bytearray` 表示的 8,192 个字节。索引 0 对应地址 `$6000` |
-| `base` | 窗口所覆盖的精灵表的偏移：`0x1800` 或 `0x1C00` |
-| `address` | 指针，0 到 127 |
-| `shift` | `$7FF4` 在共享字节中访问到的位位置：0、2、4 或 6 |
-| `model` | 规范型号名称 |
+| 属性      | 含义                                                        |
+| :-------- | :---------------------------------------------------------- |
+| `ram`     | 以 `bytearray` 表示的 8,192 个字节。索引 0 对应地址 `$6000` |
+| `base`    | 窗口所覆盖的精灵表的偏移：`0x1800` 或 `0x1C00`              |
+| `address` | 指针，0 到 127                                              |
+| `shift`   | `$7FF4` 在共享字节中访问到的位位置：0、2、4 或 6            |
+| `model`   | 规范型号名称                                                |
 
 ### 模块内容
 
-| 名称 | 内容 |
-|:--|:--|
-| `snesobc1.MODELS` | 以规范名称为键的 `Model` 记录 |
-| `snesobc1.Model` | 包含 `name`、`aliases` 和 `summary` 的记录。`build(ram=None)` 返回一个芯片 |
-| `snesobc1.models.lookup(name)` | 按与 `Chip` 相同的匹配规则，返回名称或别名所匹配的 `Model`。否则抛出 `UnknownModelError` |
-| `snesobc1.UnknownModelError` | 未指定型号或名称不匹配任何型号时抛出。消息中列出现有的型号 |
-| `snesobc1.OutOfRange` | 由 `read` 和 `write` 在地址低于 `$6000` 或高于 `$7FFF` 时抛出 |
-| `snesobc1.__version__` | 已安装的版本 |
-| `snesobc1.chip` | 这些地址背后的常量：`WINDOW_START`、`WINDOW_END`、`RAM_BYTES`、`BASE_HIGH`、`BASE_LOW`、`PACKED_OFFSET`、`FIRST_REGISTER`、`PACKED_REGISTER`、`BASE_REGISTER`、`POINTER_REGISTER`、`ADDRESS_MASK`、`PACKED_MASK`、`UNWRITTEN` |
+| 名称                           | 内容                                                                                                                                                                                                                          |
+| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snesobc1.MODELS`              | 以规范名称为键的 `Model` 记录                                                                                                                                                                                                 |
+| `snesobc1.Model`               | 包含 `name`、`aliases` 和 `summary` 的记录。`build(ram=None)` 返回一个芯片                                                                                                                                                    |
+| `snesobc1.models.lookup(name)` | 按与 `Chip` 相同的匹配规则，返回名称或别名所匹配的 `Model`。否则抛出 `UnknownModelError`                                                                                                                                      |
+| `snesobc1.UnknownModelError`   | 未指定型号或名称不匹配任何型号时抛出。消息中列出现有的型号                                                                                                                                                                    |
+| `snesobc1.OutOfRange`          | 由 `read` 和 `write` 在地址低于 `$6000` 或高于 `$7FFF` 时抛出                                                                                                                                                                 |
+| `snesobc1.__version__`         | 已安装的版本                                                                                                                                                                                                                  |
+| `snesobc1.chip`                | 这些地址背后的常量：`WINDOW_START`、`WINDOW_END`、`RAM_BYTES`、`BASE_HIGH`、`BASE_LOW`、`PACKED_OFFSET`、`FIRST_REGISTER`、`PACKED_REGISTER`、`BASE_REGISTER`、`POINTER_REGISTER`、`ADDRESS_MASK`、`PACKED_MASK`、`UNWRITTEN` |
 
 ```python
 import snesobc1
@@ -154,17 +154,17 @@ print(hex(chip.read(0x6000)))
 
 所有工具都在仓库根目录下运行。
 
-| 命令 | 参数 | 退出码 |
-|:--|:--|:--|
-| `python3 snesobc1/doctor.py` | 无 | 所有检查通过时为 0，否则为 1 |
-| `python3 -m conformance.build` | `--sources DIR`、`--output PATH`、`--pinned FILE`、`--driver-source FILE` | 0 构建成功，1 编译器失败，2 选项错误、获取失败、缺少 `obc1.cpp` 或缺少标记 |
-| `python3 -m conformance.exhaustive` | `--driver PATH` | 0 无分歧，1 某次遍历出现分歧，2 没有驱动程序、驱动程序以非零码退出或选项错误 |
-| `python3 -m conformance.speed` | 无 | 0 达到或高于下限，1 低于下限 |
-| `python3 -m conformance.documents` | `--check`、`--only SUBSTRING` | 0 所有文档已验证，1 某个文档被拒绝、没有匹配项或选项错误 |
-| `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT` | 0 访问到了寄存器，1 一个也没访问到，2 参数少于两个、目录不存在或没有带该部件的卡带 |
-| `python3 -m conformance.package` | `WHEEL` | 0 每个模块都已打包且不含测试，1 出现问题或文件不存在，2 没有参数 |
-| `python3 -m conformance.links` | 无 | 0 每个地址都有响应，1 某个地址已失效 |
-| `python3 -m conformance.quotes` | 无 | 0 每条引文都在其引用的页面上，或文档不在本机，1 某条引文不在该页或记录中没有引文 |
+| 命令                                        | 参数                                                                      | 退出码                                                                             |
+| :------------------------------------------ | :------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| `python3 snesobc1/doctor.py`                | 无                                                                        | 所有检查通过时为 0，否则为 1                                                       |
+| `python3 -m conformance.build`              | `--sources DIR`、`--output PATH`、`--pinned FILE`、`--driver-source FILE` | 0 构建成功，1 编译器失败，2 选项错误、获取失败、缺少 `obc1.cpp` 或缺少标记         |
+| `python3 -m conformance.exhaustive`         | `--driver PATH`                                                           | 0 无分歧，1 某次遍历出现分歧，2 没有驱动程序、驱动程序以非零码退出或选项错误       |
+| `python3 -m conformance.speed`              | 无                                                                        | 0 达到或高于下限，1 低于下限                                                       |
+| `python3 -m conformance.documents`          | `--check`、`--only SUBSTRING`                                             | 0 所有文档已验证，1 某个文档被拒绝、没有匹配项或选项错误                           |
+| `python3 -m conformance.against_cartridges` | `CARTRIDGES OUTPUT`                                                       | 0 访问到了寄存器，1 一个也没访问到，2 参数少于两个、目录不存在或没有带该部件的卡带 |
+| `python3 -m conformance.package`            | `WHEEL`                                                                   | 0 每个模块都已打包且不含测试，1 出现问题或文件不存在，2 没有参数                   |
+| `python3 -m conformance.links`              | 无                                                                        | 0 每个地址都有响应，1 某个地址已失效                                               |
+| `python3 -m conformance.quotes`             | 无                                                                        | 0 每条引文都在其引用的页面上，或文档不在本机，1 某条引文不在该页或记录中没有引文   |
 
 安装后的副本还提供 `snesobc1-doctor`，它运行相同的检查。
 
@@ -172,13 +172,13 @@ print(hex(chip.read(0x6000)))
 
 芯片拥有 8,192 个字节。其窗口顶部的七个地址并不读写它们所指的那个字节。
 
-| 地址 | 访问的内容 |
-|:--|:--|
-| `$7FF0` 到 `$7FF3` | 位于 `base + pointer * 4` 的四个连续字节 |
-| `$7FF4` | 位于 `base + 0x200 + pointer // 4` 的字节中的两位 |
-| `$7FF5` | 第 0 位选择基址，`0x1800` 或 `0x1C00` |
-| `$7FF6` | 指针，以及 `$7FF4` 访问的那两位 |
-| `$6000` 到 `$7FFF` 之间的其他地址 | 各自的字节 |
+| 地址                              | 访问的内容                                        |
+| :-------------------------------- | :------------------------------------------------ |
+| `$7FF0` 到 `$7FF3`                | 位于 `base + pointer * 4` 的四个连续字节          |
+| `$7FF4`                           | 位于 `base + 0x200 + pointer // 4` 的字节中的两位 |
+| `$7FF5`                           | 第 0 位选择基址，`0x1800` 或 `0x1C00`             |
+| `$7FF6`                           | 指针，以及 `$7FF4` 访问的那两位                   |
+| `$6000` 到 `$7FFF` 之间的其他地址 | 各自的字节                                        |
 
 ## 两个容易出错的地方
 
@@ -257,10 +257,10 @@ print(Chip("obc1", ram=saved).reset().address)
 
 状态由基址（2 个之一）和指针（128 个之一）组成。这 256 种组合中的每一种都能在几次写入内到达，因此遍历会访问全部组合。
 
-| 遍历 | 步数 | 对比的内容 |
-|:--|--:|:--|
+| 遍历     |  步数 | 对比的内容                                                                  |
+| :------- | ----: | :-------------------------------------------------------------------------- |
 | 所有状态 | 3,076 | 每个基址和指针，写入并读取全部五个窗口地址，然后逐字节对比全部 8,192 个字节 |
-| 复位 | 50 | 从 10 个起始状态出发，验证复位忽略内存原有内容 |
+| 复位     |    50 | 从 10 个起始状态出发，验证复位忽略内存原有内容                              |
 
 ```bash
 python3 -m conformance.build
@@ -285,13 +285,13 @@ snes9x 是第二个实现，而不是对芯片的测量。与它一致只说明�
 
 ## 参与开发
 
-| 需求 | 位置 |
-|:--|:--|
-| 所有门禁检查及其运行顺序 | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| 面向编码代理的相同内容 | [AGENTS.md](AGENTS.md) |
-| 本仓库与本系列其他仓库共享的标准 | [FAMILY.md](FAMILY.md) |
-| 缺陷报告 | [GitHub Issues](https://github.com/gufranco/snes-obc1-python/issues) |
-| 安全报告 | [SECURITY.md](SECURITY.md) |
+| 需求                             | 位置                                                                 |
+| :------------------------------- | :------------------------------------------------------------------- |
+| 所有门禁检查及其运行顺序         | [CONTRIBUTING.md](CONTRIBUTING.md)                                   |
+| 面向编码代理的相同内容           | [AGENTS.md](AGENTS.md)                                               |
+| 本仓库与本系列其他仓库共享的标准 | [FAMILY.md](FAMILY.md)                                               |
+| 缺陷报告                         | [GitHub Issues](https://github.com/gufranco/snes-obc1-python/issues) |
+| 安全报告                         | [SECURITY.md](SECURITY.md)                                           |
 
 ```bash
 uvx ruff@0.16.3 format --check .
@@ -310,7 +310,7 @@ done
 ## 参考资料
 
 - snes9x，`obc1.cpp`，提交 `2971061cf07fdc6fc7d18883edf4e648eb16a6d2`，https://github.com/snes9xgit/snes9x 。遍历所对比的参考实现。它在构建时获取，从不随本仓库携带。
-- *SNES Development Manual, Book I*，Nintendo of America Inc.。240 页，21,022,582 字节，SHA-256 `f1405241000046abba7849376d2ec53cf85f1ad2e9950d69a7c2cf1f3ff6b791`。其中的 OAM 结构给出了打包偏移。该手册不可再分发，也不在本仓库中。`python3 -m conformance.documents` 从 https://archive.org/download/SNESDevManual/book1_text.pdf 将其下载到 git 忽略的 `docs/` 中，并拒绝任何其他文件。`--check` 验证已存在的副本。
+- _SNES Development Manual, Book I_，Nintendo of America Inc.。240 页，21,022,582 字节，SHA-256 `f1405241000046abba7849376d2ec53cf85f1ad2e9950d69a7c2cf1f3ff6b791`。其中的 OAM 结构给出了打包偏移。该手册不可再分发，也不在本仓库中。`python3 -m conformance.documents` 从 https://archive.org/download/SNESDevManual/book1_text.pdf 将其下载到 git 忽略的 `docs/` 中，并拒绝任何其他文件。`--check` 验证已存在的副本。
 
 ## 引用本项目
 
