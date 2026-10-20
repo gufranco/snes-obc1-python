@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**679**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
+**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**680**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
 
 ```python
 from snesobc1 import Chip
@@ -277,7 +277,7 @@ python3 -m conformance.exhaustive
 
 snes9xは2つ目の実装であり、チップの測定ではありません。snes9xとの一致が示すのは、2つの実装が一致することです。
 
-カートリッジ自身のコードは、レジスタアドレスの2つ目の情報源です。[`conformance/against_cartridges.py`](conformance/against_cartridges.py)は、その1本のカートリッジの両方のリリースにあるドライバルーチンを実行せずにたどり、各アクセスの幅にラベルを付けます。コードが幅を設定していればknown、イメージの実行が使った幅ならexecuted、snes-driver-pythonが記録したヘッドレスのMAME 0.289の実行がその命令でバスの動かした幅を見ていればtraced、そのどれも言わなければassumedです。assumedのアクセスは1バイトとして再生されます。[`conformance/cartridges.json`](conformance/cartridges.json)は、両カートリッジのダイジェストとともにその読み取り結果を保持し、カートリッジのバイトは一切含みません。数えた708のアクセスのうち、knownは21、tracedは34、assumedは653です。2つのリリースを合わせると7つのレジスタすべてに到達します。`$7FF4`にはtracedの幅を通じてのみ到達します。これは`$7FF3`への16ビットのストアの上位バイトであり、各ストアの直前にあるカートリッジのバイト、2バイトの即値を持つ`ora #$0200`または`and #$FDFF`は、エミュレータなしでその幅を裏付けます。
+カートリッジ自身のコードは、レジスタアドレスの2つ目の情報源です。[`conformance/against_cartridges.py`](conformance/against_cartridges.py)は、その1本のカートリッジの両方のリリースにあるドライバルーチンを実行せずにたどり、各アクセスの幅にラベルを付けます。コードが幅を設定していればknown、イメージの実行が使った幅ならexecuted、snes-driver-pythonが記録したヘッドレスのMAME 0.289の実行がその命令でバスの動かした幅を見ていればtraced、そのどれも言わなければassumedです。assumedのアクセスは1バイトとして再生されます。[`conformance/cartridges.json`](conformance/cartridges.json)は、両カートリッジのダイジェストとともにその読み取り結果を保持し、カートリッジのバイトは一切含みません。分岐の両方の腕に沿って数えた1,624のアクセスのうち、knownは183、tracedは38、assumedは1,403です。2つのリリースを合わせると7つのレジスタすべてに到達します。`$7FF4`にはtracedの幅を通じてのみ到達します。これは`$7FF3`への16ビットのストアの上位バイトであり、各ストアの直前にあるカートリッジのバイト、2バイトの即値を持つ`ora #$0200`または`and #$FDFF`は、エミュレータなしでその幅を裏付けます。
 
 [`conformance/hardware.json`](conformance/hardware.json)は、このモデルが主張する各値とその出典を保持します。文書に由来するのはパックされたオフセット`0x200`だけで、出典は4バイトのスプライト128個からなるNintendoのOAMレイアウトです。それ以外の値はすべてリファレンスに由来します。この部品に言及するメーカー文書はありません。[`conformance/divergences.json`](conformance/divergences.json)は情報源が弱い箇所を記録し、[OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)は4つの未解決の問題を、それぞれを決着させる方法とともに列挙しています。
 

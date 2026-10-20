@@ -117,8 +117,11 @@ An assumed access is replayed as one byte, which can miss the second byte of a
 word; that is how `$7FF4` went unreached until a trace supplied the width.
 Nothing is dropped for lacking a width.
 
-**Measured on 2026-10-19,** against snes-driver-python at `adc1b8c`. The two
-releases make 708 accesses: 21 known, 0 executed, 34 traced and 653 assumed.
+**Measured on 2026-10-20,** against snes-driver-python at `62d619b`, which walks
+both arms of every forward conditional branch. The two releases make 1,624
+accesses: 183 known, 0 executed, 38 traced and 1,403 assumed, against 708
+accesses, 21 known, 34 traced and 653 assumed from the reader at `adc1b8c`,
+which took only the arm a branch falls through to.
 The walks from 292 sites in the European release and 291 in the American one
 rest on at least one assumed width, and
 [`conformance/cartridges.json`](conformance/cartridges.json) names each under

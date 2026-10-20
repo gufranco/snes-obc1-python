@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**679** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
+**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**680** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
 
 ```python
 from snesobc1 import Chip
@@ -277,7 +277,7 @@ python3 -m conformance.exhaustive
 
 snes9x 是第二個實現，而不是對晶片的量度。與它一致，表示兩個實現相符。
 
-卡帶本身的程式碼是暫存器位址的第二個來源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不執行的情況下，走訪這款卡帶兩個發行版本中的驅動常式，並為每次存取的寬度加上標籤：程式碼設定了寬度時為 known，映像檔的一次執行用過該寬度時為 executed，snes-driver-python 記錄的一次無頭 MAME 0.289 執行在該指令處看到匯流排搬運該寬度時為 traced，以上都說不出時為 assumed。assumed 的存取按一個位元組重放。[`conformance/cartridges.json`](conformance/cartridges.json) 保存這次解讀，連同兩款卡帶的摘要值，但不含它們的任何位元組。它統計的 708 次存取中，known 21 次，traced 34 次，assumed 653 次。兩個發行版本合起來觸及全部七個暫存器。`$7FF4` 只透過 traced 的寬度被觸及：它是寫往 `$7FF3` 的 16 位元儲存的高位元組；每次儲存之前的卡帶位元組，即帶兩位元組立即值的 `ora #$0200` 或 `and #$FDFF`，無需模擬器便證實了這個寬度。
+卡帶本身的程式碼是暫存器位址的第二個來源。[`conformance/against_cartridges.py`](conformance/against_cartridges.py) 在不執行的情況下，走訪這款卡帶兩個發行版本中的驅動常式，並為每次存取的寬度加上標籤：程式碼設定了寬度時為 known，映像檔的一次執行用過該寬度時為 executed，snes-driver-python 記錄的一次無頭 MAME 0.289 執行在該指令處看到匯流排搬運該寬度時為 traced，以上都說不出時為 assumed。assumed 的存取按一個位元組重放。[`conformance/cartridges.json`](conformance/cartridges.json) 保存這次解讀，連同兩款卡帶的摘要值，但不含它們的任何位元組。它沿每個分支的兩條分路統計的 1,624 次存取中，known 183 次，traced 38 次，assumed 1,403 次。兩個發行版本合起來觸及全部七個暫存器。`$7FF4` 只透過 traced 的寬度被觸及：它是寫往 `$7FF3` 的 16 位元儲存的高位元組；每次儲存之前的卡帶位元組，即帶兩位元組立即值的 `ora #$0200` 或 `and #$FDFF`，無需模擬器便證實了這個寬度。
 
 [`conformance/hardware.json`](conformance/hardware.json) 保存這個模型斷言的每個值及其來源。只有打包偏移 `0x200` 來自文件：Nintendo 的 OAM 佈局，128 個精靈，每個 4 位元組。其他每個值都來自參考實現。沒有任何製造商文件提及這個零件。[`conformance/divergences.json`](conformance/divergences.json) 記錄來源薄弱之處，[OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) 列出 4 個未解決的問題，以及能解決每個問題的依據。
 

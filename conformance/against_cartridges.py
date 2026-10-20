@@ -142,17 +142,17 @@ def walks(image: bytes, window: Any, traced: dict[int, int]) -> list[tuple[int, 
     snesdriver = driver()
     known = snesdriver.widths(image, LAYOUT)
     conversation = snesdriver.conversation
-    found = []
+    found: list[tuple[int, Any]] = []
     seen: set[int] = set()
     for site in conversation.sites(image, window):
         if site in seen:
             continue
         for (wide, index), told in conversation.starts(site, None, known, {}):
-            talk = conversation.at(
+            arms = conversation.every(
                 image, site, window, wide, index=index, known=known, ran=told, traced=traced
             )
-            seen.update(talk.covered)
-            found.append((site, talk))
+            seen.update(arms.covered)
+            found.extend((site, talk) for talk in arms.conversations)
     return found
 
 

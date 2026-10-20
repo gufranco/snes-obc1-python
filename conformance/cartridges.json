@@ -14,10 +14,10 @@
       "sha256": "10d86e4f79d7bf966228067d963a5d2a40e0bddd79885436e3d18e24a2762e95",
       "confirmed": "0x7ff0 0x7ff1 0x7ff2 0x7ff3 0x7ff4 0x7ff5 0x7ff6",
       "accesses": {
-        "known": 20,
+        "known": 181,
         "executed": 0,
-        "traced": 17,
-        "assumed": 327
+        "traced": 19,
+        "assumed": 707
       },
       "assumedAt": [
         "0x000f3c",
@@ -326,10 +326,10 @@
       "sha256": "d4f2cb6b209db29f7aec62e5a23846681c14665fb007e94d7bcfc7b5611e938b",
       "confirmed": "0x7ff0 0x7ff1 0x7ff2 0x7ff3 0x7ff4 0x7ff6",
       "accesses": {
-        "known": 1,
+        "known": 2,
         "executed": 0,
-        "traced": 17,
-        "assumed": 326
+        "traced": 19,
+        "assumed": 696
       },
       "assumedAt": [
         "0x0011cf",
@@ -633,16 +633,16 @@
     "0x7ff3": 12,
     "0x7ff4": 8,
     "0x7ff5": 1,
-    "0x7ff6": 8,
-    "0x7ff7": 11,
+    "0x7ff6": 12,
+    "0x7ff7": 25,
     "0x7ffd": 8,
     "0x7fff": 6
   },
   "accesses": {
-    "known": 21,
+    "known": 183,
     "executed": 0,
-    "traced": 34,
-    "assumed": 653
+    "traced": 38,
+    "assumed": 1403
   },
   "labelsByAddress": {
     "0x7ff0": ["traced"],

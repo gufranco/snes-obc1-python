@@ -62,6 +62,18 @@ class CarriesTest(unittest.TestCase):
 
 
 class ReadTest(unittest.TestCase):
+    def test_a_store_on_a_taken_branch_keeps_the_width_set_before_the_branch(self) -> None:
+        # Arrange
+        body = bytes(
+            (0x8F, 0xF0, 0x7F, 0x00, 0xC2, 0x20, 0xF0, 0x01, 0x60, 0x8F, 0xF3, 0x7F, 0x00, 0x60)
+        )
+
+        # Act
+        found = against.reached(_a_cartridge(body))
+
+        # Assert
+        self.assertEqual(sorted(found), [0x7FF0, 0x7FF3, 0x7FF4])
+
     def test_an_address_a_routine_reaches_comes_back(self) -> None:
         found = against.reached(_a_cartridge(_reaching(0x7FF0)))
 
