@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent
 
 DEFINITION = ROOT / "pinned.json"
 
-DEFAULT_SOURCES = str(Path.home() / ".cache" / "snes-obc1-reference")
+DEFAULT_SOURCES = str(ROOT.parent / "external" / "snes9x")
 
 DEFAULT_OUTPUT = str(ROOT / "ref" / "driver")
 

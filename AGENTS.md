@@ -103,6 +103,26 @@ the catalogue of tests read out of the SNES test cartridges names none for this
 part. There is no runner and no command. The one cartridge that does drive the
 part is read by [`conformance/against_cartridges.py`](conformance/against_cartridges.py).
 
+## Files kept in `external/`
+
+Everything this member reads and may not ship sits in `external/`, which git
+ignores and Dropbox is told to leave alone, per FAMILY.md's "Where the files a
+member reads are kept". [`artifacts.manifest.json`](artifacts.manifest.json)
+names it by size, CRC32, MD5, SHA-1 and SHA-256:
+
+- `external/snes9x`, the reference sources, a sparse git checkout at the
+  commit [`conformance/pinned.json`](conformance/pinned.json) pins. A test
+  holds its commit to that record.
+
+```bash
+python3 -m conformance.external
+python3 -m conformance.external --describe external/<file>
+```
+
+The first says which are here, verified, missing or wrong. The second prints
+the manifest entry for a file being added, which gets its entry in the same
+change.
+
 ## Every gate, in the order to run them
 
 ```bash
@@ -232,6 +252,9 @@ conformance/
   quotes.py      every quote in the record, found on the page of the manual it cites
   links.py       the weekly check that every cited address still answers
   speed.py       the throughput floor
+  external.py       which files in external/ are here, verified, missing or wrong
+external/           the reference sources, never committed
+artifacts.manifest.json  every file in external/, by size and every digest
 ```
 
 ## Things that will bite you
@@ -244,7 +267,7 @@ hardware.
 
 - **What the build makes is never committed.** The fetched source is somebody
   else's work under its own licence. `python3 -m conformance.build` keeps the
-  sources in `~/.cache/snes-obc1-reference`, writes the two lifted functions to
+  sources in `external/snes9x`, writes the two lifted functions to
   `conformance/ref/generated/obc1_bodies.inc` and the driver to
   `conformance/ref/driver`. The cache sits outside the repository and git
   ignores the other two. The only tracked file under `conformance/ref/` is
