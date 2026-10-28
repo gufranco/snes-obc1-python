@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**731**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
+**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**733**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
 
 ```python
 from snesobc1 import Chip
