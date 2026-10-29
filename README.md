@@ -4,9 +4,11 @@ The OBC1 sprite remapper from one Super Nintendo cartridge in Python, compared a
 
 English | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | [繁體中文（香港）](README.zh-HK.md)
 
-[![CI](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python)](https://github.com/gufranco/snes-obc1-python/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![ci](https://img.shields.io/github/actions/workflow/status/gufranco/snes-obc1-python/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/gufranco/snes-obc1-python?style=flat-square&label=release)](https://github.com/gufranco/snes-obc1-python/releases/latest)
+[![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen?style=flat-square)](https://github.com/gufranco/snes-obc1-python/actions/workflows/ci.yml)
+[![openssf scorecard](https://img.shields.io/ossf-scorecard/github.com/gufranco/snes-obc1-python?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/gufranco/snes-obc1-python)
+[![license](https://img.shields.io/github/license/gufranco/snes-obc1-python?style=flat-square&label=license)](LICENSE)
 
 **7** addresses, **256** states, all of them visited, **3,126** steps compared against the reference, **0** disagreements, **733** tests, **100%** statement and branch coverage, no dependencies
 
