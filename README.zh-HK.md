@@ -10,7 +10,7 @@
 [![openssf scorecard](https://img.shields.io/ossf-scorecard/github.com/gufranco/snes-obc1-python?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/gufranco/snes-obc1-python)
 [![license](https://img.shields.io/github/license/gufranco/snes-obc1-python?style=flat-square&label=license)](LICENSE)
 
-**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**733** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
+**7** 個位址，**256** 個狀態，全部走訪，**3,126** 步與參考實現比較，**0** 處分歧，**734** 項測試，**100%** 語句及分支覆蓋率，無任何依賴
 
 ```python
 from snesobc1 import Chip
