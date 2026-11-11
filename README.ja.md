@@ -10,7 +10,7 @@
 [![openssf scorecard](https://img.shields.io/ossf-scorecard/github.com/gufranco/snes-obc1-python?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/gufranco/snes-obc1-python)
 [![license](https://img.shields.io/github/license/gufranco/snes-obc1-python?style=flat-square&label=license)](LICENSE)
 
-**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**733**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
+**7**個のアドレス、**256**個の状態をすべて訪問、リファレンスと比較した**3,126**ステップ、不一致**0**件、**734**個のテスト、ステートメントとブランチの**100%**カバレッジ、依存パッケージなし
 
 ```python
 from snesobc1 import Chip
